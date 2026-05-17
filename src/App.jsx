@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Monitor, Zap, Layout, Shield, ArrowRight, CheckCircle2, Menu, X, Sun, Moon } from 'lucide-react';
+import { Monitor, Zap, Layout, ArrowRight, CheckCircle2, Menu, X, Sun, Moon, Printer, TrendingUp, Palette, Image as ImageIcon } from 'lucide-react';
 import Configurator from './Configurator';
 
 function App() {
@@ -52,27 +52,60 @@ function App() {
       </nav>
 
       {/* Hero Section */}
-      <header className="section-padding" style={{ position: 'relative', minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
-        <div className="container">
+      <header className="section-padding" style={{
+        position: 'relative',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        backgroundImage: `var(--hero-gradient), url('/hero-bg.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center right',
+        backgroundRepeat: 'no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        paddingTop: '80px'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <div style={{ maxWidth: '800px' }}>
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', marginBottom: '24px', letterSpacing: '-1px' }}
+              style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', marginBottom: '16px', letterSpacing: '-1px' }}
             >
-              Machen Sie Ihr Unternehmen sichtbar – <br />
-              <span className="text-gradient">offline & online.</span>
+              Sichtbar – <span className="text-gradient">offline & online.</span>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', marginBottom: '40px', maxWidth: '600px' }}
+              style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '600px' }}
             >
-              Premium Schilder & Webdesign für Unternehmen, die mehr Kunden gewinnen wollen. Wir verwandeln Impressionen in Kunden.
+              Von Schildern über Webdesign bis SEO – wir sorgen dafür, dass Kunden Sie sehen und wählen.
             </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '40px' }}
+            >
+              {['Website', 'Schilder & Reklame', 'Visitenkarten', 'SEO', 'Logo', 'Wanddekoration'].map((tag, i) => (
+                <span key={i} style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border-color)',
+                  padding: '8px 18px',
+                  borderRadius: '30px',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                  color: 'var(--text-primary)',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -80,16 +113,15 @@ function App() {
               transition={{ duration: 0.8, delay: 0.4 }}
               style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}
             >
-              <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => setIsConfiguratorOpen(true)}>
-                Kostenloser Sichtbarkeits-Check <ArrowRight size={18} />
+              <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', padding: '16px 32px' }} onClick={() => setIsConfiguratorOpen(true)}>
+                Projekt starten <ArrowRight size={20} />
               </button>
-              <a href="#portfolio" className="btn-secondary">
+              <a href="#portfolio" className="btn-secondary" style={{ display: 'flex', alignItems: 'center', fontSize: '1.1rem', padding: '16px 32px' }}>
                 Projekte ansehen
               </a>
             </motion.div>
           </div>
         </div>
-        <div className="ambient-glow" style={{ bottom: '10%', right: '5%', background: 'radial-gradient(circle, rgba(255,123,0,0.15) 0%, rgba(0,0,0,0) 70%)' }}></div>
       </header>
 
       {/* Services Overview */}
@@ -102,27 +134,37 @@ function App() {
             </p>
           </div>
 
-          <div className="grid-cols-4">
+          <div className="grid-cols-3">
             <ServiceCard
               icon={<Monitor size={32} />}
-              title="Werbeanlagen"
-              desc="Hochwertige physische Schilder, die auf jeder Straße Aufmerksamkeit erregen."
-            />
-            <ServiceCard
-              icon={<Zap size={32} />}
-              title="LED- & Leuchtreklame"
-              desc="Dynamische, energieeffiziente Leuchtschilder für 24/7 Sichtbarkeit."
+              title="Schilder & Reklame"
+              desc="Hochwertige physische Schilder und Leuchtreklame für maximale lokale Sichtbarkeit."
             />
             <ServiceCard
               icon={<Layout size={32} />}
               title="Webdesign"
-              desc="Konversionsstarke, digitale Premium-Erlebnisse, die verkaufen."
+              desc="Konversionsstarke, digitale Premium-Erlebnisse, die verkaufen und überzeugen."
+              highlight
             />
             <ServiceCard
-              icon={<Shield size={32} />}
-              title="Kombi-Pakete"
-              desc="Das ultimative Offline-zu-Online-Sichtbarkeitssystem für anspruchsvolle Unternehmen."
-              highlight
+              icon={<Printer size={32} />}
+              title="Visitenkarten & Flyer"
+              desc="Haptisches Marketingmaterial in Premium-Qualität für einen bleibenden Eindruck."
+            />
+            <ServiceCard
+              icon={<TrendingUp size={32} />}
+              title="SEO & Sichtbarkeit"
+              desc="Dominieren Sie die lokalen Suchergebnisse und werden Sie von neuen Kunden gefunden."
+            />
+            <ServiceCard
+              icon={<Palette size={32} />}
+              title="Logo & Branding"
+              desc="Einzigartige Markenidentitäten, die Vertrauen schaffen und im Gedächtnis bleiben."
+            />
+            <ServiceCard
+              icon={<ImageIcon size={32} />}
+              title="Wanddekoration"
+              desc="Eindrucksvolle Gestaltung Ihrer Geschäftsräume, die Ihre Marke erlebbar macht."
             />
           </div>
         </div>

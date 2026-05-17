@@ -27,6 +27,7 @@
   --bg-cta: rgba(20, 20, 20, 0.8);
   --upload-bg: rgba(10, 10, 10, 0.3);
   --close-btn-bg: rgba(255, 255, 255, 0.1);
+  --hero-gradient: linear-gradient(to right, var(--bg-main) 20%, rgba(5, 5, 5, 0.8) 50%, rgba(5, 5, 5, 0) 100%);
 }
 
 [data-theme="light"] {
@@ -49,6 +50,7 @@
   --bg-cta: rgba(255, 255, 255, 0.9);
   --upload-bg: rgba(240, 240, 240, 0.5);
   --close-btn-bg: rgba(0, 0, 0, 0.1);
+  --hero-gradient: linear-gradient(to right, var(--bg-main) 20%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 100%);
 }
 
 * {

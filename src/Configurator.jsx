@@ -1,12 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, ArrowLeft, UploadCloud, Monitor, Type, Palette, Maximize, Zap, Star, TrendingUp, ShieldCheck, Layout } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, UploadCloud, Monitor, Type, Palette, Maximize, TrendingUp, Layout, Printer, Image as ImageIcon } from 'lucide-react';
+
+const serviceOptions = [
+  { id: 'signage', title: 'Schilder & Reklame', desc: 'Leucht- & Firmenschilder', price: 800, priceDisplay: 'ab €800', icon: <Monitor size={24} /> },
+  { id: 'web', title: 'Webdesign', desc: 'Premium Websites', price: 1500, priceDisplay: 'ab €1.500', icon: <Layout size={24} /> },
+  { id: 'print', title: 'Visitenkarten & Flyer', desc: 'Premium Printprodukte', price: 150, priceDisplay: 'ab €150', icon: <Printer size={24} /> },
+  { id: 'seo', title: 'SEO & Sichtbarkeit', desc: 'Lokales Ranking', price: 300, priceDisplay: 'ab €300/mtl.', icon: <TrendingUp size={24} /> },
+  { id: 'logo', title: 'Logo & Branding', desc: 'Markenidentität', price: 500, priceDisplay: 'ab €500', icon: <Palette size={24} /> },
+  { id: 'decor', title: 'Wanddekoration', desc: 'Innenraumgestaltung', price: 300, priceDisplay: 'ab €300', icon: <ImageIcon size={24} /> },
+];
 
 const Configurator = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    signageTier: 'pro', // Default to Pro
-    websiteTier: '',
+    services: ['signage', 'web'], // Default selected
     size: '',
     style: '',
     colors: '',
@@ -19,8 +27,15 @@ const Configurator = ({ onClose }) => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSelect = (key, value) => {
-    setFormData({ ...formData, [key]: value });
+  const handleToggleService = (id) => {
+    setFormData(prev => {
+      const isSelected = prev.services.includes(id);
+      if (isSelected) {
+        return { ...prev, services: prev.services.filter(s => s !== id) };
+      } else {
+        return { ...prev, services: [...prev.services, id] };
+      }
+    });
   };
 
   const handleChange = (e) => {
@@ -43,25 +58,13 @@ const Configurator = ({ onClose }) => {
   // Calculate estimated price ranges
   const getEstimate = () => {
     let min = 0;
-    let max = 0;
-    
-    // Signage estimate
-    if (formData.signageTier === 'premium') { min += 3500; max += 6000; }
-    else if (formData.signageTier === 'pro') { min += 1500; max += 3500; }
-    else if (formData.signageTier === 'basic') { min += 800; max += 1500; }
-    
-    // Website estimate
-    if (formData.websiteTier === 'premium') { min += 3500; max += 6000; }
-    else if (formData.websiteTier === 'basic') { min += 1500; max += 2500; }
-    
-    // Combined bundle discount (15% off total if both are selected)
-    if (formData.signageTier && formData.websiteTier && formData.websiteTier !== 'none') {
-      min = Math.floor(min * 0.85);
-      max = Math.floor(max * 0.85);
-    }
+    formData.services.forEach(serviceId => {
+      const option = serviceOptions.find(o => o.id === serviceId);
+      if (option) min += option.price;
+    });
 
     if (min === 0) return '---';
-    return `€${min.toLocaleString()} - €${max.toLocaleString()}`;
+    return `ab €${min.toLocaleString()}`;
   };
 
   // Animations
@@ -75,9 +78,9 @@ const Configurator = ({ onClose }) => {
     <div className="configurator-overlay" style={overlayStyle}>
       <div className="glass-panel configurator-modal" style={modalStyle}>
         <button onClick={onClose} style={closeBtnStyle}>✕</button>
-        
+
         {submitted ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             style={successStyle}
@@ -85,9 +88,9 @@ const Configurator = ({ onClose }) => {
             <div style={glowCircleStyle}>
               <Check size={48} color="var(--accent-primary)" />
             </div>
-            <h2 className="text-gradient" style={{fontSize: '2.5rem', marginBottom: '1rem'}}>Vielen Dank!</h2>
-            <p style={{color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem'}}>
-              Ihre Sichtbarkeitsreise beginnt jetzt.<br/>Wir werden uns in Kürze mit Ihrem individuellen Angebot bei Ihnen melden.
+            <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Vielen Dank!</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
+              Ihr Projekt-Briefing ist bei uns eingegangen.<br />Wir melden uns in Kürze mit einem maßgeschneiderten Angebot.
             </p>
             <button className="btn-primary" onClick={onClose}>Zurück zur Startseite</button>
           </motion.div>
@@ -95,38 +98,37 @@ const Configurator = ({ onClose }) => {
           <div style={layoutStyle}>
             {/* Sidebar / Progress */}
             <div style={sidebarStyle}>
-              <h3 className="text-accent-glow" style={{marginBottom: '2rem', fontSize: '1.5rem'}}>Projekt-Konfigurator</h3>
-              
+              <h3 className="text-accent-glow" style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>Projekt-Start</h3>
+
               <div style={progressContainerStyle}>
-                {[1, 2, 3, 4, 5].map((num) => (
-                  <div key={num} style={{...stepItemStyle, opacity: step >= num ? 1 : 0.4}}>
-                    <div style={{...stepCircleStyle, background: step >= num ? 'var(--accent-primary)' : 'transparent', borderColor: step >= num ? 'var(--accent-primary)' : 'var(--border-color)', color: step >= num ? 'white' : 'inherit'}}>
+                {[1, 2, 3, 4].map((num) => (
+                  <div key={num} style={{ ...stepItemStyle, opacity: step >= num ? 1 : 0.4 }}>
+                    <div style={{ ...stepCircleStyle, background: step >= num ? 'var(--accent-primary)' : 'transparent', borderColor: step >= num ? 'var(--accent-primary)' : 'var(--border-color)', color: step >= num ? 'white' : 'inherit' }}>
                       {step > num ? <Check size={12} color="white" /> : num}
                     </div>
-                    <span style={{color: step === num ? 'var(--text-primary)' : 'var(--text-secondary)'}}>
-                      {num === 1 ? 'Schilderart' : 
-                       num === 2 ? 'Website-Upgrade' : 
-                       num === 3 ? 'Details' : 
-                       num === 4 ? 'Uploads' : 'Kontakt'}
+                    <span style={{ color: step === num ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+                      {num === 1 ? 'Leistungen' :
+                        num === 2 ? 'Details' :
+                          num === 3 ? 'Uploads' : 'Kontakt'}
                     </span>
                   </div>
                 ))}
               </div>
-              
+
               <div style={estimateBoxStyle}>
-                <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem'}}>Geschätzter Preisrahmen</p>
-                <p className="text-gradient" style={{fontSize: '1.8rem', fontWeight: '700'}}>{getEstimate()}</p>
-                {formData.signageTier && formData.websiteTier && formData.websiteTier !== 'none' && (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Geschätzter Startpreis</p>
+                <p className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: '700' }}>{getEstimate()}</p>
+                {formData.services.length > 1 && (
                   <div style={{ background: 'rgba(255,123,0,0.1)', color: 'var(--accent-primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block', marginTop: '8px' }}>
-                    Paket-Rabatt angewendet
+                    Paket-Vorteil möglich
                   </div>
                 )}
-                <p style={{color: 'rgba(255,123,0,0.7)', fontSize: '0.8rem', marginTop: '12px', fontStyle: 'italic'}}>
-                  *Endgültiger Preis kann je nach genauen Anforderungen variieren.
+                <p style={{ color: 'rgba(255,123,0,0.7)', fontSize: '0.8rem', marginTop: '12px', fontStyle: 'italic' }}>
+                  *Endgültiger Preis wird nach individuellem Aufwand berechnet.
                 </p>
               </div>
             </div>
-            
+
             {/* Main Content Area */}
             <div style={contentStyle}>
               <AnimatePresence mode="wait">
@@ -138,179 +140,104 @@ const Configurator = ({ onClose }) => {
                   exit="exit"
                   style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
                 >
-                  <div style={{flex: 1}}>
-                  {step === 1 && (
-                    <>
-                      <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Wählen Sie Ihre Beschilderung</h2>
-                      <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>Wählen Sie das gewünschte Maß an Sichtbarkeit für Ihren physischen Standort.</p>
-                      
-                      <div className="grid-cols-1" style={{display: 'grid', gap: '16px'}}>
-                        {/* Premium - Shown First */}
-                        <RadioOption 
-                          icon={<Star size={24} />}
-                          title="Premium LED-Schild"
-                          desc="Dynamische, vollständig anpassbare LED-Technologie für maximale Sichtbarkeit bei Tag und Nacht."
-                          priceRange="€3.500 - €6.000"
-                          selected={formData.signageTier === 'premium'}
-                          onClick={() => handleSelect('signageTier', 'premium')}
-                          badge="Preis-Leistungs-Sieger"
-                          badgeColor="linear-gradient(90deg, #FFD700, #FFA500)"
-                        />
-                        {/* Pro - Recommended Default */}
-                        <RadioOption 
-                          icon={<Zap size={24} />}
-                          title="Pro Leuchtschild"
-                          desc="Hochwertige hinterleuchtete Buchstaben für eine moderne, professionelle Unternehmensästhetik."
-                          priceRange="€1.500 - €3.500"
-                          selected={formData.signageTier === 'pro'}
-                          onClick={() => handleSelect('signageTier', 'pro')}
-                          badge="Empfohlen von Skyline Vision"
-                          badgeColor="var(--accent-primary)"
-                        />
-                        {/* Basic - Shown Last */}
-                        <RadioOption 
-                          icon={<ShieldCheck size={24} />}
-                          title="Basis Werbeschild"
-                          desc="Standardmäßige, langlebige Außenschilder für wesentliche lokale Präsenz."
-                          priceRange="€800 - €1.500"
-                          selected={formData.signageTier === 'basic'}
-                          onClick={() => handleSelect('signageTier', 'basic')}
-                        />
-                      </div>
-                    </>
-                  )}
+                  <div style={{ flex: 1 }}>
+                    {step === 1 && (
+                      <>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Was benötigen Sie?</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Wählen Sie alle gewünschten Leistungen für Ihr Projekt aus. Mehrere Auswahlen sind möglich.</p>
 
-                  {step === 2 && (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
-                        <TrendingUp size={32} color="var(--accent-primary)" />
-                        <h2 style={{fontSize: '2rem', margin: 0}}>Beschleunigen Sie Ihr Wachstum</h2>
-                      </div>
-                      <p style={{color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '1.1rem'}}>
-                        Möchten Sie eine professionelle Website hinzufügen, um Kundenanfragen zu steigern?
-                      </p>
-                      
-                      <div style={{ background: 'rgba(255,123,0,0.1)', border: '1px solid var(--border-accent)', padding: '16px', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-primary)', fontWeight: '500' }}>
-                          <Zap size={18} /> Kombinieren Sie Schilder + Website für einen <strong>speziellen Paket-Rabatt!</strong>
-                        </p>
-                      </div>
+                        <div className="grid-cols-2" style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+                          {serviceOptions.map((service) => (
+                            <RadioOption
+                              key={service.id}
+                              icon={service.icon}
+                              title={service.title}
+                              desc={service.desc}
+                              priceRange={service.priceDisplay}
+                              selected={formData.services.includes(service.id)}
+                              onClick={() => handleToggleService(service.id)}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
 
-                      <div className="grid-cols-1" style={{display: 'grid', gap: '16px'}}>
-                        <RadioOption 
-                          icon={<Monitor size={24} />}
-                          title="Premium Website-Paket"
-                          desc="Individuelles Design, fortschrittliches SEO und konversionsstarke Animationen. Dominieren Sie Ihren lokalen Markt."
-                          priceRange="+ €3.500 - €6.000"
-                          selected={formData.websiteTier === 'premium'}
-                          onClick={() => handleSelect('websiteTier', 'premium')}
-                          badge="Steigert die Kundensichtbarkeit um 300%"
-                          badgeColor="linear-gradient(90deg, var(--accent-primary), #ff3300)"
-                        />
-                        <RadioOption 
-                          icon={<Layout size={24} />}
-                          title="Basis Website-Paket"
-                          desc="Saubere, wesentliche digitale Präsenz, um Ihre Marke online zu legitimieren."
-                          priceRange="+ €1.500 - €2.500"
-                          selected={formData.websiteTier === 'basic'}
-                          onClick={() => handleSelect('websiteTier', 'basic')}
-                          badge="Meistgewählte Option"
-                          badgeColor="var(--text-primary)"
-                          badgeTextColor="var(--bg-main)"
-                        />
-                        <div 
-                          className={`radio-card ${formData.websiteTier === 'none' ? 'selected' : ''}`} 
-                          onClick={() => handleSelect('websiteTier', 'none')}
-                          style={{ opacity: 0.7, borderStyle: 'dashed' }}
-                        >
-                           <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-                              <div style={{color: 'var(--text-secondary)'}}><ArrowRight size={24} /></div>
-                              <div>
-                                <h4 style={{fontSize: '1.1rem', marginBottom: '4px'}}>Nein danke, vorerst nur Schilder</h4>
-                                <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>Ich verzichte auf den Paket-Rabatt.</p>
-                              </div>
-                           </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                    {step === 2 && (
+                      <>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Projektdetails</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Geben Sie uns eine Vorstellung davon, was Sie im Sinn haben.</p>
 
-                  {step === 3 && (
-                    <>
-                      <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Projektdetails</h2>
-                      <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>Geben Sie uns eine Vorstellung davon, was Sie im Sinn haben.</p>
-                      
-                      <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                        <div>
-                          <label style={labelStyle}><Maximize size={16} /> Abmessungen / Größe (Optional)</label>
-                          <input type="text" name="size" value={formData.size} onChange={handleChange} className="form-input" placeholder="z.B. 2m x 1m, oder 'Noch unsicher'" />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          <div>
+                            <label style={labelStyle}><Maximize size={16} /> Abmessungen / Spezifikationen (Optional)</label>
+                            <input type="text" name="size" value={formData.size} onChange={handleChange} className="form-input" placeholder="z.B. Schildergröße, Seitenanzahl der Website etc." />
+                          </div>
+                          <div>
+                            <label style={labelStyle}><Type size={16} /> Bevorzugter Stil</label>
+                            <input type="text" name="style" value={formData.style} onChange={handleChange} className="form-input" placeholder="z.B. Minimalistisch, Auffällig, Corporate" />
+                          </div>
+                          <div>
+                            <label style={labelStyle}><Palette size={16} /> Markenfarben / CI</label>
+                            <input type="text" name="colors" value={formData.colors} onChange={handleChange} className="form-input" placeholder="z.B. Schwarz & Gold, Rot & Weiß" />
+                          </div>
                         </div>
-                        <div>
-                          <label style={labelStyle}><Type size={16} /> Bevorzugter Stil</label>
-                          <input type="text" name="style" value={formData.style} onChange={handleChange} className="form-input" placeholder="z.B. Minimalistisch, Auffällig, Corporate" />
-                        </div>
-                        <div>
-                          <label style={labelStyle}><Palette size={16} /> Markenfarben</label>
-                          <input type="text" name="colors" value={formData.colors} onChange={handleChange} className="form-input" placeholder="z.B. Schwarz & Gold, Rot & Weiß" />
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
 
-                  {step === 4 && (
-                    <>
-                      <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Materialien hochladen</h2>
-                      <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>Haben Sie ein Logo oder Inspirationen? Hier ablegen (Optional).</p>
-                      
-                      <div style={uploadAreaStyle}>
-                        <UploadCloud size={48} color="var(--accent-primary)" style={{marginBottom: '1rem'}} />
-                        <p style={{marginBottom: '0.5rem', fontWeight: '500'}}>Zum Durchsuchen klicken oder Drag & Drop</p>
-                        <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem'}}>SVG, PNG, JPG, PDF (Max 10MB)</p>
-                        <input type="file" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} />
-                      </div>
-                    </>
-                  )}
+                    {step === 3 && (
+                      <>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Materialien hochladen</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Haben Sie bereits ein Logo, Bilder vom Ladenlokal oder Inspirationen? Hier ablegen (Optional).</p>
 
-                  {step === 5 && (
-                    <>
-                      <h2 style={{fontSize: '2rem', marginBottom: '1rem'}}>Kontaktdaten</h2>
-                      <p style={{color: 'var(--text-secondary)', marginBottom: '2rem'}}>Fast geschafft! Wie können wir Sie erreichen?</p>
-                      
-                      <form id="lead-form" onSubmit={handleSubmit} style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
-                        <div className="grid-cols-2" style={{gap: '16px'}}>
-                          <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
-                          <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firmenname" />
+                        <div style={uploadAreaStyle}>
+                          <UploadCloud size={48} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
+                          <p style={{ marginBottom: '0.5rem', fontWeight: '500' }}>Zum Durchsuchen klicken oder Drag & Drop</p>
+                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>SVG, PNG, JPG, PDF (Max 10MB)</p>
+                          <input type="file" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
                         </div>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
-                        <div className="grid-cols-2" style={{gap: '16px'}}>
-                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
-                          <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="form-input" placeholder="WhatsApp (Optional)" />
-                        </div>
-                      </form>
-                    </>
-                  )}
+                      </>
+                    )}
+
+                    {step === 4 && (
+                      <>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Kontaktdaten</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Fast geschafft! Wie können wir Sie erreichen?</p>
+
+                        <form id="lead-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
+                            <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firmenname" />
+                          </div>
+                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
+                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
+                            <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="form-input" placeholder="WhatsApp (Optional)" />
+                          </div>
+                        </form>
+                      </>
+                    )}
                   </div>
 
                   {/* Navigation Buttons */}
                   <div style={navButtonsStyle}>
                     {step > 1 ? (
-                      <button className="btn-secondary" onClick={handleBack} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <button className="btn-secondary" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <ArrowLeft size={16} /> Zurück
                       </button>
                     ) : <div></div>}
-                    
-                    {step < 5 ? (
-                      <button 
-                        className="btn-primary" 
-                        onClick={handleNext} 
-                        disabled={(step === 1 && !formData.signageTier) || (step === 2 && !formData.websiteTier)}
-                        style={{display: 'flex', alignItems: 'center', gap: '8px', opacity: ((step === 1 && !formData.signageTier) || (step === 2 && !formData.websiteTier)) ? 0.5 : 1}}
+
+                    {step < 4 ? (
+                      <button
+                        className="btn-primary"
+                        onClick={handleNext}
+                        disabled={(step === 1 && formData.services.length === 0)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: (step === 1 && formData.services.length === 0) ? 0.5 : 1 }}
                       >
                         Weiter <ArrowRight size={16} />
                       </button>
                     ) : (
-                      <button type="submit" form="lead-form" className="btn-primary" style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                        Mein individuelles Angebot erhalten <Check size={16} />
+                      <button type="submit" form="lead-form" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Mein Angebot anfordern <Check size={16} />
                       </button>
                     )}
                   </div>
@@ -325,13 +252,17 @@ const Configurator = ({ onClose }) => {
 };
 
 const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, badgeColor, badgeTextColor }) => (
-  <div 
-    className={`radio-card ${selected ? 'selected' : ''}`} 
+  <div
+    className={`radio-card ${selected ? 'selected' : ''}`}
     onClick={onClick}
     style={{
       border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
       transform: selected ? 'scale(1.02)' : 'scale(1)',
-      boxShadow: selected ? '0 8px 30px rgba(255,123,0,0.15)' : 'none'
+      boxShadow: selected ? '0 8px 30px rgba(255,123,0,0.15)' : 'none',
+      padding: '16px',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column'
     }}
   >
     {badge && (
@@ -350,19 +281,17 @@ const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, 
         {badge}
       </div>
     )}
-    <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-      <div style={{display: 'flex', gap: '16px', alignItems: 'center'}}>
-        {icon && <div style={{color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)'}}>{icon}</div>}
-        <div>
-          <h4 style={{fontSize: '1.2rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px'}}>
-            {title}
-          </h4>
-          <p style={{color: 'var(--text-secondary)', fontSize: '0.9rem', maxWidth: '350px'}}>{desc}</p>
-        </div>
+    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '8px' }}>
+      {icon && <div style={{ color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>{icon}</div>}
+      <div>
+        <h4 style={{ fontSize: '1.1rem', marginBottom: '4px', lineHeight: '1.2' }}>
+          {title}
+        </h4>
       </div>
-      <div style={{textAlign: 'right'}}>
-         <span style={{fontSize: '1.1rem', fontWeight: 'bold', color: selected ? 'var(--text-primary)' : 'var(--text-secondary)'}}>{priceRange}</span>
-      </div>
+    </div>
+    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '12px', flex: 1 }}>{desc}</p>
+    <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', width: '100%', paddingTop: '8px' }}>
+      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: selected ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{priceRange}</span>
     </div>
   </div>
 );
