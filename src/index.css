@@ -1,0 +1,268 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Theme Neutral */
+  --accent-primary: #ff7b00;
+  --accent-glow: #ffb03a;
+  --accent-muted: rgba(255, 123, 0, 0.2);
+  --border-accent: rgba(255, 123, 0, 0.3);
+  
+  /* Dark Theme (Default) */
+  --bg-main: #050505;
+  --bg-surface: rgba(20, 20, 20, 0.6);
+  --bg-card: rgba(30, 30, 30, 0.4);
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-gradient-start: #ffffff;
+  --text-gradient-end: #a0a0a0;
+  --bg-overlay: rgba(0, 0, 0, 0.85);
+  --bg-modal: #111111;
+  --bg-sidebar: rgba(10, 10, 10, 0.6);
+  --bg-input: rgba(10, 10, 10, 0.5);
+  --footer-bg: #000000;
+  --nav-bg: rgba(5, 5, 5, 0.8);
+  --bg-services: linear-gradient(180deg, var(--bg-main) 0%, rgba(10,10,10,1) 100%);
+  --bg-trust: rgba(255, 255, 255, 0.02);
+  --bg-cta: rgba(20, 20, 20, 0.8);
+  --upload-bg: rgba(10, 10, 10, 0.3);
+  --close-btn-bg: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] {
+  --bg-main: #ffffff;
+  --bg-surface: rgba(255, 255, 255, 0.8);
+  --bg-card: rgba(245, 245, 245, 0.9);
+  --text-primary: #111111;
+  --text-secondary: #555555;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --text-gradient-start: #111111;
+  --text-gradient-end: #555555;
+  --bg-overlay: rgba(255, 255, 255, 0.85);
+  --bg-modal: #ffffff;
+  --bg-sidebar: rgba(245, 245, 245, 0.9);
+  --bg-input: rgba(255, 255, 255, 0.9);
+  --footer-bg: #f8f8f8;
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --bg-services: linear-gradient(180deg, var(--bg-main) 0%, #f0f0f0 100%);
+  --bg-trust: rgba(0, 0, 0, 0.02);
+  --bg-cta: rgba(255, 255, 255, 0.9);
+  --upload-bg: rgba(240, 240, 240, 0.5);
+  --close-btn-bg: rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+/* Utilities */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--border-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px -10px var(--accent-muted);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, var(--text-gradient-start), var(--text-gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.text-accent-glow {
+  color: var(--accent-primary);
+  text-shadow: 0 0 20px var(--accent-muted);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), #ff5500);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -5px var(--accent-primary);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px var(--accent-primary);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--border-color);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section-padding {
+  padding: 100px 0;
+}
+
+.grid-cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.grid-cols-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.grid-cols-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
+  .section-padding { padding: 60px 0; }
+}
+
+/* Ambient Background Glow */
+.ambient-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--accent-muted) 0%, rgba(0,0,0,0) 70%);
+  border-radius: 50%;
+  filter: blur(60px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Form Styles */
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+.form-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.mobile-only-btn {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-only-btn {
+    display: block !important;
+  }
+}
+
+/* Custom Radio/Checkbox Wrapper */
+.radio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.radio-card:hover {
+  border-color: var(--border-accent);
+}
+
+.radio-card.selected {
+  border-color: var(--accent-primary);
+  background: rgba(255, 123, 0, 0.05);
+}
+
+.radio-card input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
