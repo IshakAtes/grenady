@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Monitor, Zap, Layout, ArrowRight, CheckCircle2, Menu, X, Sun, Moon, Printer, TrendingUp, Palette, Image as ImageIcon } from 'lucide-react';
+import { Check, Phone, ArrowRight, Monitor, Layout, Printer, TrendingUp, Palette, Image as ImageIcon, Zap, Menu, X, Sun, Moon, CheckCircle2 } from 'lucide-react';
 import Configurator from './Configurator';
+
+import cafeDeLokmaNeon from './assets/cafe-de-lokma-neon.jpg';
+import seebarSchild from './assets/seebar-schild.jpeg';
+import seebarSchild2 from './assets/seebar-shild2.jpg';
+import lokmaVorher from './assets/lokmaReklameVorherjpg.jpg';
+import lokmaNachher from './assets/lokmaReklameNachher.jpg';
+import wanddekoTeddy from './assets/wanddeko-teddy.jpg';
+import wcNeon from './assets/wc-neon.jpg';
 
 function App() {
   const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
@@ -190,14 +198,18 @@ function App() {
             <div style={{ position: 'relative' }}>
               <div className="glass-panel" style={{ padding: '8px', position: 'relative', zIndex: 2 }}>
                 {/* Placeholder for Before/After Image */}
-                <div style={{ width: '100%', height: '400px', background: '#1a1a1a', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, left: 0, width: '50%', height: '100%', background: 'linear-gradient(45deg, #111, #222)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: '2px solid var(--accent-primary)' }}>
+                <div style={{ width: '100%', height: '400px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                  <img src={lokmaNachher} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '114%', objectFit: 'cover' }} alt="Nachher" />
+                  <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%' }}>
+                    <span style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'var(--accent-primary)', color: 'white', padding: '4px 12px', borderRadius: '4px', zIndex: 10 }}>Nachher</span>
+                  </div>
+
+                  <div style={{ position: 'absolute', top: -32, left: 0, width: '50%', height: '108%', overflow: 'hidden', borderRight: '2px solid var(--accent-primary)', zIndex: 2 }}>
+                    <img src={lokmaVorher} style={{ width: '200%', height: '100%', objectFit: 'cover', maxWidth: 'none' }} alt="Vorher" />
                     <span style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 12px', borderRadius: '4px' }}>Vorher</span>
                   </div>
-                  <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%', background: 'linear-gradient(45deg, #2a1a00, #4a2a00)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'var(--accent-primary)', color: 'white', padding: '4px 12px', borderRadius: '4px' }}>Nachher</span>
-                  </div>
-                  <div style={{ position: 'absolute', width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3 }}>
+
+                  <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, boxShadow: '0 0 10px rgba(0,0,0,0.5)' }}>
                     <div style={{ width: '2px', height: '20px', background: '#050505' }}></div>
                   </div>
                 </div>
@@ -233,12 +245,20 @@ function App() {
           <h2 style={{ fontSize: '3rem', marginBottom: '40px' }}>Ausgewählte <span className="text-gradient">Projekte</span></h2>
 
           <div className="grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {[
+              { img: cafeDeLokmaNeon, title: 'Cafe de Lokma', tag: 'LED-Reklame' },
+              { img: wanddekoTeddy, title: 'Teddy Wand', tag: 'Wanddekoration' },
+              { img: wcNeon, title: 'Restroom Neon', tag: 'LED-Reklame' },
+              { img: seebarSchild2, title: 'Cafe & See Bar (Nacht)', tag: 'Außenwerbung' },
+              { img: seebarSchild, title: 'Cafe & See Bar (Tag)', tag: 'Firmenschild' },
+              { img: '/hero-bg.png', title: 'Ihre Marke', tag: 'Webdesign & Mehr' }
+            ].map((project, i) => (
               <div key={i} className="glass-card" style={{ height: '300px', display: 'flex', alignItems: 'flex-end', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(45deg, #111, #1a1a1a)`, zIndex: 1 }}></div>
-                <div style={{ position: 'relative', zIndex: 2, width: '100%', background: 'rgba(0,0,0,0.7)', color: 'white', backdropFilter: 'blur(10px)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <h4 style={{ fontSize: '1.2rem', marginBottom: '4px' }}>Projekt {i}</h4>
-                  <p style={{ color: 'var(--accent-primary)', fontSize: '0.9rem' }}>{i % 2 === 0 ? 'Schilder + Web' : 'LED-Beschilderung'}</p>
+                <img src={project.img} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} alt={project.title} />
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%)', zIndex: 1 }}></div>
+                <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
+                  <span style={{ background: 'var(--accent-primary)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px', display: 'inline-block' }}>{project.tag}</span>
+                  <h3 style={{ fontSize: '1.5rem', margin: 0, color: 'white' }}>{project.title}</h3>
                 </div>
               </div>
             ))}
