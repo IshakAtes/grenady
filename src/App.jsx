@@ -6,7 +6,7 @@ import Configurator from './Configurator';
 function App() {
   const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -19,7 +19,7 @@ function App() {
   return (
     <div className="app-container">
       <div className="ambient-glow" style={{ top: '-10%', left: '-10%' }}></div>
-      
+
       {/* Navbar */}
       <nav style={navStyle}>
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
@@ -29,7 +29,7 @@ function App() {
             </div>
             <span style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '1px' }}>SKYLINE VISION</span>
           </div>
-          
+
           <div className="desktop-menu" style={desktopMenu}>
             <a href="#services" style={navLink}>Leistungen</a>
             <a href="#portfolio" style={navLink}>Referenzen</a>
@@ -39,10 +39,10 @@ function App() {
             </button>
             <button className="btn-primary" onClick={() => setIsConfiguratorOpen(true)}>Projekt starten</button>
           </div>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} className="mobile-menu-wrapper">
-            <button onClick={toggleTheme} style={{...themeBtnStyle, display: 'block'}} className="mobile-only-btn">
-                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            <button onClick={toggleTheme} style={{ ...themeBtnStyle, display: 'block' }} className="mobile-only-btn">
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={mobileMenuBtn}>
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -55,17 +55,17 @@ function App() {
       <header className="section-padding" style={{ position: 'relative', minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
         <div className="container">
           <div style={{ maxWidth: '800px' }}>
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
               style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', marginBottom: '24px', letterSpacing: '-1px' }}
             >
-              Machen Sie Ihr Unternehmen sichtbar – <br/>
+              Machen Sie Ihr Unternehmen sichtbar – <br />
               <span className="text-gradient">offline & online.</span>
             </motion.h1>
-            
-            <motion.p 
+
+            <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
@@ -73,8 +73,8 @@ function App() {
             >
               Premium Schilder & Webdesign für Unternehmen, die mehr Kunden gewinnen wollen. Wir verwandeln Impressionen in Kunden.
             </motion.p>
-            
-            <motion.div 
+
+            <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
@@ -103,22 +103,22 @@ function App() {
           </div>
 
           <div className="grid-cols-4">
-            <ServiceCard 
+            <ServiceCard
               icon={<Monitor size={32} />}
               title="Werbeanlagen"
               desc="Hochwertige physische Schilder, die auf jeder Straße Aufmerksamkeit erregen."
             />
-            <ServiceCard 
+            <ServiceCard
               icon={<Zap size={32} />}
               title="LED- & Leuchtreklame"
               desc="Dynamische, energieeffiziente Leuchtschilder für 24/7 Sichtbarkeit."
             />
-            <ServiceCard 
+            <ServiceCard
               icon={<Layout size={32} />}
               title="Webdesign"
               desc="Konversionsstarke, digitale Premium-Erlebnisse, die verkaufen."
             />
-            <ServiceCard 
+            <ServiceCard
               icon={<Shield size={32} />}
               title="Kombi-Pakete"
               desc="Das ultimative Offline-zu-Online-Sichtbarkeitssystem für anspruchsvolle Unternehmen."
@@ -138,7 +138,7 @@ function App() {
                 Erleben Sie, wie wir unsichtbare Unternehmen in lokale Wahrzeichen und digitale Autoritäten verwandeln. Unser kombinierter Ansatz garantiert, dass Kunden Sie finden, Ihnen vertrauen und sich für Sie entscheiden.
               </p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
-                {[ 'Bis zu 40% mehr Laufkundschaft', 'Höhere digitale Konversionsraten', 'Premium-Markenwahrnehmung', 'Einheitliche Offline- und Online-Identität' ].map((item, i) => (
+                {['Bis zu 40% mehr Laufkundschaft', 'Höhere digitale Konversionsraten', 'Premium-Markenwahrnehmung', 'Einheitliche Offline- und Online-Identität'].map((item, i) => (
                   <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem' }}>
                     <CheckCircle2 size={20} className="text-accent" /> {item}
                   </li>
@@ -175,7 +175,7 @@ function App() {
               Wir bauen nicht nur Schilder oder Websites; wir entwickeln Sichtbarkeitssysteme.
             </p>
           </div>
-          
+
           <div className="grid-cols-4">
             <TrustItem title="Premium-Materialien" desc="Nur die hochwertigsten Acrylgläser, Metalle und LEDs, die jahrelang halten." />
             <TrustItem title="Individuelles Design" desc="Speziell auf Ihre Markenidentität zugeschnitten, niemals von der Stange." />
@@ -189,7 +189,7 @@ function App() {
       <section id="portfolio" className="section-padding">
         <div className="container">
           <h2 style={{ fontSize: '3rem', marginBottom: '40px' }}>Ausgewählte <span className="text-gradient">Projekte</span></h2>
-          
+
           <div className="grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="glass-card" style={{ height: '300px', display: 'flex', alignItems: 'flex-end', padding: '20px', position: 'relative', overflow: 'hidden' }}>
@@ -209,7 +209,7 @@ function App() {
         <div className="ambient-glow" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
         <div className="container">
           <div className="glass-panel" style={{ padding: '80px 40px', maxWidth: '800px', margin: '0 auto', background: 'var(--bg-cta)' }}>
-            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '24px' }}>Machen Sie Ihr Unternehmen <br/><span className="text-accent-glow">unübersehbar.</span></h2>
+            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '24px' }}>Machen Sie Ihr Unternehmen <br /><span className="text-accent-glow">unübersehbar.</span></h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px' }}>
               Verlieren Sie keine Kunden mehr an Konkurrenten, die einfach besser aussehen. Verbessern Sie noch heute Ihre Sichtbarkeit.
             </p>
