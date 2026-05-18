@@ -6,7 +6,7 @@
   --accent-glow: #ffb03a;
   --accent-muted: rgba(255, 123, 0, 0.2);
   --border-accent: rgba(255, 123, 0, 0.3);
-  
+
   /* Dark Theme (Default) */
   --bg-main: #050505;
   --bg-surface: rgba(20, 20, 20, 0.6);
@@ -22,11 +22,12 @@
   --bg-input: rgba(10, 10, 10, 0.5);
   --footer-bg: #000000;
   --nav-bg: rgba(5, 5, 5, 0.8);
-  --bg-services: linear-gradient(180deg, var(--bg-main) 0%, rgba(10,10,10,1) 100%);
+  --bg-services: linear-gradient(180deg, var(--bg-main) 0%, rgba(10, 10, 10, 1) 100%);
   --bg-trust: rgba(255, 255, 255, 0.02);
   --bg-cta: rgba(20, 20, 20, 0.8);
   --upload-bg: rgba(10, 10, 10, 0.3);
   --close-btn-bg: rgba(255, 255, 255, 0.1);
+  --hero-gradient: linear-gradient(to right, var(--bg-main) 20%, rgba(5, 5, 5, 0.8) 50%, rgba(5, 5, 5, 0) 100%);
 }
 
 [data-theme="light"] {
@@ -49,6 +50,7 @@
   --bg-cta: rgba(255, 255, 255, 0.9);
   --upload-bg: rgba(240, 240, 240, 0.5);
   --close-btn-bg: rgba(0, 0, 0, 0.1);
+  --hero-gradient: linear-gradient(to right, var(--bg-main) 20%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0) 100%);
 }
 
 * {
@@ -67,7 +69,12 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   line-height: 1.2;
   font-weight: 700;
 }
@@ -111,6 +118,7 @@ button {
 .text-gradient {
   background: linear-gradient(to right, var(--text-gradient-start), var(--text-gradient-end));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -185,12 +193,22 @@ button {
 }
 
 @media (max-width: 1024px) {
-  .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
-  .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
-  .section-padding { padding: 60px 0; }
+
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .section-padding {
+    padding: 60px 0;
+  }
 }
 
 /* Ambient Background Glow */
@@ -198,7 +216,7 @@ button {
   position: absolute;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, var(--accent-muted) 0%, rgba(0,0,0,0) 70%);
+  background: radial-gradient(circle, var(--accent-muted) 0%, rgba(0, 0, 0, 0) 70%);
   border-radius: 50%;
   filter: blur(60px);
   z-index: -1;
