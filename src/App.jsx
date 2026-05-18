@@ -10,6 +10,7 @@ import lokmaVorher from './assets/lokmaReklameVorherjpg.jpg';
 import lokmaNachher from './assets/lokmaReklameNachher.jpg';
 import wanddekoTeddy from './assets/wanddeko-teddy.jpg';
 import wcNeon from './assets/wc-neon.jpg';
+import heroBg from './assets/hero-bg.png';
 
 function App() {
   const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
@@ -65,7 +66,7 @@ function App() {
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
-        backgroundImage: `var(--hero-gradient), url('/hero-bg.png')`,
+        backgroundImage: `var(--hero-gradient), url('${heroBg}')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center right',
         backgroundRepeat: 'no-repeat',
@@ -251,7 +252,7 @@ function App() {
               { img: wcNeon, title: 'Restroom Neon', tag: 'LED-Reklame' },
               { img: seebarSchild2, title: 'Cafe & See Bar (Nacht)', tag: 'Außenwerbung' },
               { img: seebarSchild, title: 'Cafe & See Bar (Tag)', tag: 'Firmenschild' },
-              { img: '/hero-bg.png', title: 'Ihre Marke', tag: 'Webdesign & Mehr' }
+              { img: heroBg, title: 'Ihre Marke', tag: 'Webdesign & Mehr' }
             ].map((project, i) => (
               <div key={i} className="glass-card" style={{ height: '300px', display: 'flex', alignItems: 'flex-end', padding: '20px', position: 'relative', overflow: 'hidden' }}>
                 <img src={project.img} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} alt={project.title} />
