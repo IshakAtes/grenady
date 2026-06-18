@@ -1,41 +1,84 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, ArrowLeft, UploadCloud, Monitor, Type, Palette, Maximize, TrendingUp, Layout, Printer, Image as ImageIcon } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Clock,
+  Euro,
+  Image as ImageIcon,
+  Layout,
+  Link as LinkIcon,
+  MessageSquare,
+  Monitor,
+  Palette,
+  Phone,
+  Printer,
+  TrendingUp,
+  Type,
+} from 'lucide-react';
+import { getWhatsappUrl } from './config/whatsapp';
 
-const serviceOptions = [
-  { id: 'signage', title: 'Schilder & Reklame', desc: 'Leucht- & Firmenschilder', price: 800, priceDisplay: 'ab €800', icon: <Monitor size={24} /> },
-  { id: 'web', title: 'Webdesign', desc: 'Premium Websites', price: 1500, priceDisplay: 'ab €1.500', icon: <Layout size={24} /> },
-  { id: 'print', title: 'Visitenkarten & Flyer', desc: 'Premium Printprodukte', price: 150, priceDisplay: 'ab €150', icon: <Printer size={24} /> },
-  { id: 'seo', title: 'SEO & Sichtbarkeit', desc: 'Lokales Ranking', price: 300, priceDisplay: 'ab €300/mtl.', icon: <TrendingUp size={24} /> },
-  { id: 'logo', title: 'Logo & Branding', desc: 'Markenidentität', price: 500, priceDisplay: 'ab €500', icon: <Palette size={24} /> },
-  { id: 'decor', title: 'Wanddekoration', desc: 'Innenraumgestaltung', price: 300, priceDisplay: 'ab €300', icon: <ImageIcon size={24} /> },
+const projectOptions = [
+  { id: 'signage', title: 'Schilder & Reklame', desc: 'Leuchtreklame, Firmenschilder, LED-Schilder', icon: <Monitor size={24} /> },
+  { id: 'website', title: 'Webdesign', desc: 'Website, Landingpage oder Relaunch', icon: <Layout size={24} /> },
+  { id: 'visibility', title: 'Komplettes Sichtbarkeitspaket', desc: 'Schilder und Website aus einer Hand', icon: <TrendingUp size={24} /> },
+  { id: 'branding', title: 'Branding & Print', desc: 'Logo, Visitenkarten, Flyer oder Wandgestaltung', icon: <Palette size={24} /> },
+];
+
+const signTypeOptions = [
+  { id: 'illuminated', title: 'Leuchtreklame', desc: 'Auffällig bei Tag und Nacht', icon: <ImageIcon size={24} /> },
+  { id: 'company', title: 'Firmenschild', desc: 'Premium-Schild für Fassade, Praxis oder Büro', icon: <Printer size={24} /> },
+  { id: 'led', title: 'LED-Schild', desc: 'Modern, hell und aufmerksamkeitsstark', icon: <Monitor size={24} /> },
+  { id: 'unsure', title: 'Noch offen', desc: 'Wir beraten zur passenden Lösung', icon: <MessageSquare size={24} /> },
+];
+
+const websitePackageOptions = [
+  { id: 'starter', title: 'Starter Website', desc: 'Kompakte Website für lokale Sichtbarkeit' },
+  { id: 'premium', title: 'Premium Website', desc: 'Mehr Seiten, stärkere Wirkung, bessere Conversion' },
+  { id: 'relaunch', title: 'Relaunch', desc: 'Bestehende Website hochwertig erneuern' },
+  { id: 'unsure', title: 'Noch offen', desc: 'Wir empfehlen ein passendes Paket' },
+];
+
+const budgetOptions = [
+  { id: 'under-1000', title: 'Bis 1.000 EUR', desc: 'Kleines Projekt oder Einstieg' },
+  { id: '1000-3000', title: '1.000 - 3.000 EUR', desc: 'Solider Rahmen für lokale Sichtbarkeit' },
+  { id: '3000-7000', title: '3.000 - 7.000 EUR', desc: 'Premium-Auftritt mit mehr Umfang' },
+  { id: '7000-plus', title: 'Über 7.000 EUR', desc: 'Umfangreiches Sichtbarkeitssystem' },
+  { id: 'unsure', title: 'Noch offen', desc: 'Budget gemeinsam einschätzen' },
+];
+
+const timelineOptions = [
+  { id: 'asap', title: 'So schnell wie möglich', desc: 'Priorität auf zügiger Umsetzung' },
+  { id: '2-4-weeks', title: 'In 2 - 4 Wochen', desc: 'Konkreter Start ist geplant' },
+  { id: '1-3-months', title: 'In 1 - 3 Monaten', desc: 'Projekt wird vorbereitet' },
+  { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum ist noch offen' },
 ];
 
 const Configurator = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    services: ['signage', 'web'], // Default selected
-    size: '',
-    style: '',
-    colors: '',
-    files: null,
+    projectType: '',
+    signType: '',
+    websitePackage: '',
+    budget: '',
+    timeline: '',
+    inspirationWebsites: '',
     name: '',
     company: '',
     email: '',
     phone: '',
-    whatsapp: ''
+    notes: '',
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleToggleService = (id) => {
-    setFormData(prev => {
-      const isSelected = prev.services.includes(id);
-      if (isSelected) {
-        return { ...prev, services: prev.services.filter(s => s !== id) };
-      } else {
-        return { ...prev, services: [...prev.services, id] };
-      }
-    });
+  const canProceed =
+    (step === 1 && formData.projectType) ||
+    step === 2 ||
+    (step === 3 && formData.name && formData.email && formData.phone);
+
+  const handleSelect = (name, value) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleChange = (e) => {
@@ -43,6 +86,7 @@ const Configurator = ({ onClose }) => {
   };
 
   const handleNext = () => {
+    if (!canProceed) return;
     setStep((prev) => prev + 1);
   };
 
@@ -55,29 +99,18 @@ const Configurator = ({ onClose }) => {
     setSubmitted(true);
   };
 
-  // Calculate estimated price ranges
-  const getEstimate = () => {
-    let min = 0;
-    formData.services.forEach(serviceId => {
-      const option = serviceOptions.find(o => o.id === serviceId);
-      if (option) min += option.price;
-    });
+  const getSelectedLabel = (options, value) => options.find((option) => option.id === value)?.title || 'Noch offen';
 
-    if (min === 0) return '---';
-    return `ab €${min.toLocaleString()}`;
-  };
-
-  // Animations
   const slideVariants = {
     hidden: { opacity: 0, x: 20 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
-    exit: { opacity: 0, x: -20, transition: { duration: 0.3 } }
+    exit: { opacity: 0, x: -20, transition: { duration: 0.3 } },
   };
 
   return (
     <div className="configurator-overlay" style={overlayStyle}>
       <div className="glass-panel configurator-modal" style={modalStyle}>
-        <button onClick={onClose} style={closeBtnStyle}>✕</button>
+        <button onClick={onClose} style={closeBtnStyle}>×</button>
 
         {submitted ? (
           <motion.div
@@ -88,15 +121,28 @@ const Configurator = ({ onClose }) => {
             <div style={glowCircleStyle}>
               <Check size={48} color="var(--accent-primary)" />
             </div>
-            <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Vielen Dank!</h2>
+            <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+              Vielen Dank für Ihre Anfrage.
+            </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
-              Ihr Projekt-Briefing ist bei uns eingegangen.<br />Wir melden uns in Kürze mit einem maßgeschneiderten Angebot.
+              Wir prüfen Ihre Angaben und melden uns schnellstmöglich bei Ihnen.
             </p>
-            <button className="btn-primary" onClick={onClose}>Zurück zur Startseite</button>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '560px', marginBottom: '2rem' }}>
+              Senden Sie uns gerne Fotos, Logos, Videos, Screenshots oder Inspirationen direkt per WhatsApp.
+            </p>
+            <a
+              className="btn-primary"
+              href={getWhatsappUrl()}
+              target="_blank"
+              rel="noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}
+            >
+              📱 Dateien per WhatsApp senden
+            </a>
+            <button className="btn-secondary" onClick={onClose}>Zurück zur Startseite</button>
           </motion.div>
         ) : (
           <div style={layoutStyle}>
-            {/* Sidebar / Progress */}
             <div style={sidebarStyle}>
               <h3 className="text-accent-glow" style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>Projekt-Start</h3>
 
@@ -107,29 +153,23 @@ const Configurator = ({ onClose }) => {
                       {step > num ? <Check size={12} color="white" /> : num}
                     </div>
                     <span style={{ color: step === num ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                      {num === 1 ? 'Leistungen' :
-                        num === 2 ? 'Details' :
-                          num === 3 ? 'Uploads' : 'Kontakt'}
+                      {num === 1 ? 'Projekt' : num === 2 ? 'Rahmen' : num === 3 ? 'Kontakt' : 'Absenden'}
                     </span>
                   </div>
                 ))}
               </div>
 
               <div style={estimateBoxStyle}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Geschätzter Startpreis</p>
-                <p className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: '700' }}>{getEstimate()}</p>
-                {formData.services.length > 1 && (
-                  <div style={{ background: 'rgba(255,123,0,0.1)', color: 'var(--accent-primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block', marginTop: '8px' }}>
-                    Paket-Vorteil möglich
-                  </div>
-                )}
-                <p style={{ color: 'rgba(255,123,0,0.7)', fontSize: '0.8rem', marginTop: '12px', fontStyle: 'italic' }}>
-                  *Endgültiger Preis wird nach individuellem Aufwand berechnet.
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Aktuelle Auswahl</p>
+                <p className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '12px' }}>
+                  {getSelectedLabel(projectOptions, formData.projectType)}
+                </p>
+                <p style={{ color: 'rgba(255,123,0,0.8)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                  Je genauer die Angaben, desto schneller können wir ein passendes Angebot vorbereiten.
                 </p>
               </div>
             </div>
 
-            {/* Main Content Area */}
             <div style={contentStyle}>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -143,42 +183,52 @@ const Configurator = ({ onClose }) => {
                   <div style={{ flex: 1 }}>
                     {step === 1 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Was benötigen Sie?</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Wählen Sie alle gewünschten Leistungen für Ihr Projekt aus. Mehrere Auswahlen sind möglich.</p>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Welche Sichtbarkeit brauchen Sie?</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                          Wählen Sie die passende Projektart und, falls relevant, die Schildart oder das Website-Paket.
+                        </p>
 
                         <div className="grid-cols-2" style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-                          {serviceOptions.map((service) => (
+                          {projectOptions.map((option) => (
                             <RadioOption
-                              key={service.id}
-                              icon={service.icon}
-                              title={service.title}
-                              desc={service.desc}
-                              priceRange={service.priceDisplay}
-                              selected={formData.services.includes(service.id)}
-                              onClick={() => handleToggleService(service.id)}
+                              key={option.id}
+                              icon={option.icon}
+                              title={option.title}
+                              desc={option.desc}
+                              selected={formData.projectType === option.id}
+                              onClick={() => handleSelect('projectType', option.id)}
                             />
                           ))}
+                        </div>
+
+                        <div style={{ display: 'grid', gap: '20px', marginTop: '28px' }}>
+                          <OptionGroup label="Schildart" icon={<Monitor size={16} />} options={signTypeOptions} value={formData.signType} onSelect={(value) => handleSelect('signType', value)} />
+                          <OptionGroup label="Website-Paket" icon={<Layout size={16} />} options={websitePackageOptions} value={formData.websitePackage} onSelect={(value) => handleSelect('websitePackage', value)} />
                         </div>
                       </>
                     )}
 
                     {step === 2 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Projektdetails</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Geben Sie uns eine Vorstellung davon, was Sie im Sinn haben.</p>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Budget, Zeitraum & Inspiration</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                          Diese Angaben helfen uns, Ihr Projekt realistisch einzuordnen.
+                        </p>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                          <OptionGroup label="Budgetrahmen" icon={<Euro size={16} />} options={budgetOptions} value={formData.budget} onSelect={(value) => handleSelect('budget', value)} />
+                          <OptionGroup label="Zeitraum" icon={<Clock size={16} />} options={timelineOptions} value={formData.timeline} onSelect={(value) => handleSelect('timeline', value)} />
+
                           <div>
-                            <label style={labelStyle}><Maximize size={16} /> Abmessungen / Spezifikationen (Optional)</label>
-                            <input type="text" name="size" value={formData.size} onChange={handleChange} className="form-input" placeholder="z.B. Schildergröße, Seitenanzahl der Website etc." />
-                          </div>
-                          <div>
-                            <label style={labelStyle}><Type size={16} /> Bevorzugter Stil</label>
-                            <input type="text" name="style" value={formData.style} onChange={handleChange} className="form-input" placeholder="z.B. Minimalistisch, Auffällig, Corporate" />
-                          </div>
-                          <div>
-                            <label style={labelStyle}><Palette size={16} /> Markenfarben / CI</label>
-                            <input type="text" name="colors" value={formData.colors} onChange={handleChange} className="form-input" placeholder="z.B. Schwarz & Gold, Rot & Weiß" />
+                            <label style={labelStyle}><LinkIcon size={16} /> Inspirations-Websites</label>
+                            <textarea
+                              name="inspirationWebsites"
+                              value={formData.inspirationWebsites}
+                              onChange={handleChange}
+                              className="form-input"
+                              rows="3"
+                              placeholder="Links zu Websites, Stilen oder Marken, die Ihnen gefallen"
+                            />
                           </div>
                         </div>
                       </>
@@ -186,58 +236,81 @@ const Configurator = ({ onClose }) => {
 
                     {step === 3 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Materialien hochladen</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Haben Sie bereits ein Logo, Bilder vom Ladenlokal oder Inspirationen? Hier ablegen (Optional).</p>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Kontaktdaten & Notizen</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                          Wie können wir Sie erreichen und was sollten wir vorab wissen?
+                        </p>
 
-                        <div style={uploadAreaStyle}>
-                          <UploadCloud size={48} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
-                          <p style={{ marginBottom: '0.5rem', fontWeight: '500' }}>Zum Durchsuchen klicken oder Drag & Drop</p>
-                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>SVG, PNG, JPG, PDF (Max 10MB)</p>
-                          <input type="file" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
-                        </div>
+                        <form id="lead-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
+                            <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firma / Geschäft" />
+                          </div>
+                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
+                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
+                          <div>
+                            <label style={labelStyle}><Type size={16} /> Notizen</label>
+                            <textarea
+                              name="notes"
+                              value={formData.notes}
+                              onChange={handleChange}
+                              className="form-input"
+                              rows="5"
+                              placeholder="Wünsche, Standort, vorhandene Website oder besondere Anforderungen"
+                            />
+                          </div>
+                        </form>
                       </>
                     )}
 
                     {step === 4 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Kontaktdaten</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Fast geschafft! Wie können wir Sie erreichen?</p>
+                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Anfrage prüfen</h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                          Senden Sie die Anfrage ab. Dateien schicken Sie danach bequem per WhatsApp.
+                        </p>
 
-                        <form id="lead-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
-                            <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firmenname" />
+                        <div style={summaryGridStyle}>
+                          <SummaryItem label="Projektart" value={getSelectedLabel(projectOptions, formData.projectType)} />
+                          <SummaryItem label="Schildart" value={getSelectedLabel(signTypeOptions, formData.signType)} />
+                          <SummaryItem label="Website-Paket" value={getSelectedLabel(websitePackageOptions, formData.websitePackage)} />
+                          <SummaryItem label="Budgetrahmen" value={getSelectedLabel(budgetOptions, formData.budget)} />
+                          <SummaryItem label="Zeitraum" value={getSelectedLabel(timelineOptions, formData.timeline)} />
+                          <SummaryItem label="Kontakt" value={formData.name ? `${formData.name}${formData.company ? `, ${formData.company}` : ''}` : 'Noch offen'} />
+                        </div>
+
+                        <div style={whatsappHintStyle}>
+                          <Phone size={22} color="var(--accent-primary)" />
+                          <div>
+                            <strong>Dateien nach dem Absenden per WhatsApp senden</strong>
+                            <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+                              Fotos, Logos, Videos, Screenshots und Inspirationen werden nicht hochgeladen, sondern direkt per WhatsApp geteilt.
+                            </p>
                           </div>
-                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
-                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
-                            <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="form-input" placeholder="WhatsApp (Optional)" />
-                          </div>
-                        </form>
+                        </div>
                       </>
                     )}
                   </div>
 
-                  {/* Navigation Buttons */}
                   <div style={navButtonsStyle}>
                     {step > 1 ? (
                       <button className="btn-secondary" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <ArrowLeft size={16} /> Zurück
                       </button>
-                    ) : <div></div>}
+                    ) : <div />}
 
                     {step < 4 ? (
                       <button
                         className="btn-primary"
                         onClick={handleNext}
-                        disabled={(step === 1 && formData.services.length === 0)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: (step === 1 && formData.services.length === 0) ? 0.5 : 1 }}
+                        disabled={!canProceed}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: canProceed ? 1 : 0.5 }}
                       >
                         Weiter <ArrowRight size={16} />
                       </button>
                     ) : (
-                      <button type="submit" form="lead-form" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Mein Angebot anfordern <Check size={16} />
+                      <button onClick={handleSubmit} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        Anfrage absenden <Check size={16} />
                       </button>
                     )}
                   </div>
@@ -251,7 +324,26 @@ const Configurator = ({ onClose }) => {
   );
 };
 
-const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, badgeColor, badgeTextColor }) => (
+const OptionGroup = ({ label, icon, options, value, onSelect }) => (
+  <div>
+    <label style={labelStyle}>{icon} {label}</label>
+    <div className="grid-cols-2" style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+      {options.map((option) => (
+        <RadioOption
+          key={option.id}
+          icon={option.icon}
+          title={option.title}
+          desc={option.desc}
+          compact
+          selected={value === option.id}
+          onClick={() => onSelect(option.id)}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+const RadioOption = ({ icon, title, desc, selected, onClick, badge, badgeColor, badgeTextColor, compact }) => (
   <div
     className={`radio-card ${selected ? 'selected' : ''}`}
     onClick={onClick}
@@ -259,10 +351,10 @@ const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, 
       border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
       transform: selected ? 'scale(1.02)' : 'scale(1)',
       boxShadow: selected ? '0 8px 30px rgba(255,123,0,0.15)' : 'none',
-      padding: '16px',
+      padding: compact ? '14px' : '16px',
       height: '100%',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
     }}
   >
     {badge && (
@@ -276,7 +368,7 @@ const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, 
         fontWeight: 'bold',
         padding: '4px 12px',
         borderRadius: '12px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
       }}>
         {badge}
       </div>
@@ -289,14 +381,17 @@ const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, 
         </h4>
       </div>
     </div>
-    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '12px', flex: 1 }}>{desc}</p>
-    <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', width: '100%', paddingTop: '8px' }}>
-      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: selected ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{priceRange}</span>
-    </div>
+    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 0, flex: 1 }}>{desc}</p>
   </div>
 );
 
-// Inline Styles
+const SummaryItem = ({ label, value }) => (
+  <div style={summaryItemStyle}>
+    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{label}</span>
+    <strong style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>{value}</strong>
+  </div>
+);
+
 const overlayStyle = {
   position: 'fixed',
   top: 0,
@@ -309,7 +404,7 @@ const overlayStyle = {
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  padding: '20px'
+  padding: '20px',
 };
 
 const modalStyle = {
@@ -321,7 +416,7 @@ const modalStyle = {
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  boxShadow: '0 25px 50px -12px rgba(255, 123, 0, 0.15)'
+  boxShadow: '0 25px 50px -12px rgba(255, 123, 0, 0.15)',
 };
 
 const closeBtnStyle = {
@@ -340,16 +435,13 @@ const closeBtnStyle = {
   fontSize: '1.2rem',
   cursor: 'pointer',
   zIndex: 10,
-  transition: 'all 0.2s ease'
+  transition: 'all 0.2s ease',
 };
 
 const layoutStyle = {
   display: 'flex',
   height: '100%',
   flexDirection: 'row',
-  '@media (maxWidth: 768px)': {
-    flexDirection: 'column'
-  }
 };
 
 const sidebarStyle = {
@@ -359,36 +451,26 @@ const sidebarStyle = {
   padding: '40px 30px',
   display: 'flex',
   flexDirection: 'column',
-  '@media (maxWidth: 768px)': {
-    width: '100%',
-    padding: '20px',
-    height: 'auto',
-    borderRight: 'none',
-    borderBottom: '1px solid var(--border-color)'
-  }
 };
 
 const contentStyle = {
   flex: 1,
   padding: '60px 80px',
   overflowY: 'auto',
-  '@media (maxWidth: 768px)': {
-    padding: '30px 20px'
-  }
 };
 
 const progressContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
   gap: '24px',
-  marginBottom: 'auto'
+  marginBottom: 'auto',
 };
 
 const stepItemStyle = {
   display: 'flex',
   alignItems: 'center',
   gap: '16px',
-  transition: 'opacity 0.3s ease'
+  transition: 'opacity 0.3s ease',
 };
 
 const stepCircleStyle = {
@@ -401,7 +483,7 @@ const stepCircleStyle = {
   alignItems: 'center',
   fontSize: '0.8rem',
   fontWeight: 'bold',
-  transition: 'all 0.3s ease'
+  transition: 'all 0.3s ease',
 };
 
 const estimateBoxStyle = {
@@ -409,7 +491,7 @@ const estimateBoxStyle = {
   border: '1px solid var(--border-accent)',
   borderRadius: '12px',
   padding: '20px',
-  marginTop: '40px'
+  marginTop: '40px',
 };
 
 const navButtonsStyle = {
@@ -417,7 +499,7 @@ const navButtonsStyle = {
   justifyContent: 'space-between',
   marginTop: '40px',
   paddingTop: '20px',
-  borderTop: '1px solid var(--border-color)'
+  borderTop: '1px solid var(--border-color)',
 };
 
 const labelStyle = {
@@ -425,21 +507,7 @@ const labelStyle = {
   alignItems: 'center',
   gap: '8px',
   marginBottom: '8px',
-  color: 'var(--text-secondary)'
-};
-
-const uploadAreaStyle = {
-  border: '2px dashed var(--border-color)',
-  borderRadius: '12px',
-  padding: '40px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--upload-bg)',
-  position: 'relative',
-  transition: 'all 0.3s ease',
-  cursor: 'pointer'
+  color: 'var(--text-secondary)',
 };
 
 const successStyle = {
@@ -449,7 +517,7 @@ const successStyle = {
   justifyContent: 'center',
   height: '100%',
   textAlign: 'center',
-  padding: '40px'
+  padding: '40px',
 };
 
 const glowCircleStyle = {
@@ -461,7 +529,34 @@ const glowCircleStyle = {
   alignItems: 'center',
   justifyContent: 'center',
   marginBottom: '2rem',
-  boxShadow: '0 0 50px var(--accent-muted)'
+  boxShadow: '0 0 50px var(--accent-muted)',
+};
+
+const summaryGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+  gap: '14px',
+  marginBottom: '28px',
+};
+
+const summaryItemStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-color)',
+  borderRadius: '12px',
+  padding: '16px',
+};
+
+const whatsappHintStyle = {
+  display: 'flex',
+  gap: '14px',
+  alignItems: 'flex-start',
+  background: 'rgba(255, 123, 0, 0.06)',
+  border: '1px solid var(--border-accent)',
+  borderRadius: '12px',
+  padding: '18px',
 };
 
 export default Configurator;

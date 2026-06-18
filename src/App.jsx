@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Phone, ArrowRight, Monitor, Layout, Printer, TrendingUp, Palette, Image as ImageIcon, Zap, Menu, X, Sun, Moon, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Monitor, Layout, Printer, TrendingUp, Palette, Image as ImageIcon, Zap, Menu, X, Sun, Moon, CheckCircle2 } from 'lucide-react';
 import Configurator from './Configurator';
 
 import cafeDeLokmaNeon from './assets/cafe-de-lokma-neon.jpg';
@@ -36,7 +36,7 @@ function App() {
             <div style={{ width: '40px', height: '40px', background: 'var(--accent-primary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={24} color="white" />
             </div>
-            <span style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '1px' }}>SKYLINE VISION</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '1px' }}>GRENADY</span>
           </div>
 
           <div className="desktop-menu" style={desktopMenu}>
@@ -225,7 +225,7 @@ function App() {
       <section id="trust" className="section-padding" style={{ background: 'var(--bg-trust)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '16px' }}>Warum <span className="text-accent">Skyline Vision</span></h2>
+            <h2 style={{ fontSize: '3rem', marginBottom: '16px' }}>Warum <span className="text-accent">Grenady</span></h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
               Wir bauen nicht nur Schilder oder Websites; wir entwickeln Sichtbarkeitssysteme.
             </p>
@@ -289,10 +289,10 @@ function App() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <Zap size={20} className="text-accent" />
-              <span style={{ fontSize: '1.2rem', fontWeight: '800' }}>SKYLINE VISION</span>
+              <span style={{ fontSize: '1.2rem', fontWeight: '800' }}>GRENADY</span>
             </div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              &copy; {new Date().getFullYear()} Skyline Vision. Premium Schilder & Webdesign.
+              &copy; {new Date().getFullYear()} Grenady. Premium Schilder & Webdesign.
             </div>
           </div>
         </div>
