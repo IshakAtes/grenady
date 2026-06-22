@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   Code2,
   ExternalLink,
-  Globe2,
   LayoutTemplate,
   Link2,
   Megaphone,
@@ -29,24 +28,25 @@ const projectOptions = [
   { id: 'shop', title: 'Onlineshop', desc: 'Shopify, Shopware, Relaunch oder Optimierung', icon: ShoppingBag },
   { id: 'seo', title: 'SEO / SEA / GEO', desc: 'Mehr Nachfrage über Suche, Ads und AI Search', icon: Search },
   { id: 'branding', title: 'Logo & Branding', desc: 'Markenauftritt, Designsystem und Copywriting', icon: Palette },
+  { id: 'marketing', title: 'Digitales Marketing', desc: 'Social Media, E-Mail und Kampagnen', icon: Megaphone },
+  { id: 'ai-automation', title: 'KI-Automatisierung', desc: 'n8n-Workflows, KI-Agenten und Prozessautomation', icon: Bot },
+  { id: 'ai-assistant', title: 'Chatbot & KI-Assistent', desc: 'Eigener privater Clawbot, Chatbot oder Jarvis-Assistent', icon: MessageCircle },
   { id: 'software', title: 'Software & APIs', desc: 'Apps, interne Tools, Schnittstellen und Symfony APIs', icon: Code2 },
   { id: 'retainer', title: 'Retainer & Wartung', desc: 'Laufende Betreuung und Weiterentwicklung', icon: Wrench },
-  { id: 'marketing', title: 'Marketing & Automation', desc: 'Social, E-Mail, n8n und AI Automation', icon: Megaphone },
 ];
 
-const visibilityOptions = [
-  { id: 'digital', title: 'Rein digital', desc: 'Website, Shop, Branding oder Marketing', icon: Globe2 },
-  { id: 'led', title: 'LED-Schild ergänzen', desc: 'Design, Produktion und Montage am Standort', icon: Monitor },
-  { id: 'unsure', title: 'Noch offen', desc: 'Wir beraten zur passenden Kombination', icon: MessageCircle },
+const signOptions = [
+  { id: 'led', title: 'LED-Schrift & Leuchtreklame', desc: 'Design, Produktion und Montage am Standort', icon: Monitor },
+  { id: 'company-sign', title: 'Firmen- & Fassadenschild', desc: 'Hochwertiges Schild passend zum Markenauftritt', icon: LayoutTemplate },
+  { id: 'sign-consulting', title: 'Beratung zur Schildart', desc: 'Physische Sichtbarkeit gewünscht, Ausführung noch offen', icon: MessageCircle },
 ];
 
 const packageOptions = [
-  { id: 'website', title: 'Website', desc: 'Strategie, Design und Entwicklung' },
+  { id: 'landingpage', title: 'Landingpage / Onepager', desc: 'Kompakter Auftritt für ein klares Angebot' },
+  { id: 'business', title: 'Business Website', desc: 'Mehrseitige Website für Unternehmen' },
   { id: 'shop', title: 'Onlineshop', desc: 'Shopify oder Shopware' },
-  { id: 'branding', title: 'Branding', desc: 'Logo, Designsystem und Texte' },
-  { id: 'growth', title: 'Growth', desc: 'SEO, SEA, GEO und AI Search' },
-  { id: 'software', title: 'Custom System', desc: 'App, API oder internes Tool' },
-  { id: 'retainer', title: 'Retainer', desc: 'Wartung und laufende Optimierung' },
+  { id: 'custom', title: 'Individuelle Plattform', desc: 'Besondere Funktionen oder Systemanbindungen' },
+  { id: 'unsure', title: 'Noch offen', desc: 'Wir empfehlen das passende Paket' },
 ];
 
 const budgetOptions = [
@@ -64,12 +64,18 @@ const timelineOptions = [
   { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum noch offen' },
 ];
 
-const getLabel = (options, value) => options.find((option) => option.id === value)?.title || 'Noch offen';
+const getLabel = (options, value, fallback = 'Noch offen') => options.find((option) => option.id === value)?.title || fallback;
+const getLabels = (options, values) => values.map((value) => getLabel(options, value)).join(', ');
 
-function OptionCard({ option, selected, onSelect }) {
+function OptionCard({ option, selected, multiple, onSelect }) {
   const Icon = option.icon;
   return (
-    <button type="button" className={`config-option ${selected ? 'is-selected' : ''}`} onClick={onSelect}>
+    <button
+      type="button"
+      className={`config-option ${multiple ? 'is-multiple' : ''} ${selected ? 'is-selected' : ''}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
       {Icon && <Icon size={22} strokeWidth={1.8} />}
       <span><strong>{option.title}</strong><small>{option.desc}</small></span>
       <span className="option-check"><Check size={13} /></span>
@@ -77,14 +83,23 @@ function OptionCard({ option, selected, onSelect }) {
   );
 }
 
-function OptionGroup({ label, options, value, onSelect }) {
+function OptionGroup({ label, options, value, multiple = false, allowEmpty = false, onSelect }) {
   return (
     <fieldset className="config-fieldset">
       <legend>{label}</legend>
       <div className="config-options">
-        {options.map((option) => (
-          <OptionCard key={option.id} option={option} selected={value === option.id} onSelect={() => onSelect(option.id)} />
-        ))}
+        {options.map((option) => {
+          const selected = multiple ? value.includes(option.id) : value === option.id;
+          return (
+            <OptionCard
+              key={option.id}
+              option={option}
+              selected={selected}
+              multiple={multiple}
+              onSelect={() => onSelect(allowEmpty && selected ? '' : option.id)}
+            />
+          );
+        })}
       </div>
     </fieldset>
   );
@@ -94,8 +109,8 @@ function Configurator({ onClose }) {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
-    projectType: '',
-    visibility: '',
+    projectTypes: [],
+    signType: '',
     websitePackage: '',
     budget: '',
     timeline: '',
@@ -107,8 +122,16 @@ function Configurator({ onClose }) {
     notes: '',
   });
 
-  const canProceed = step === 1 ? Boolean(formData.projectType) : step === 3 ? Boolean(formData.name && formData.email && formData.phone) : true;
+  const canProceed = step === 1 ? formData.projectTypes.length > 0 : step === 3 ? Boolean(formData.name && formData.email && formData.phone) : true;
+  const needsWebsitePackage = formData.projectTypes.some((value) => ['website', 'relaunch', 'shop'].includes(value));
   const select = (name, value) => setFormData((current) => ({ ...current, [name]: value }));
+  const toggleProjectType = (value) => setFormData((current) => {
+    const projectTypes = current.projectTypes.includes(value)
+      ? current.projectTypes.filter((item) => item !== value)
+      : [...current.projectTypes, value];
+    const includesWebsiteProject = projectTypes.some((item) => ['website', 'relaunch', 'shop'].includes(item));
+    return { ...current, projectTypes, websitePackage: includesWebsiteProject ? current.websitePackage : '' };
+  });
   const change = (event) => setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   const submit = (event) => { event?.preventDefault(); setSubmitted(true); };
 
@@ -150,7 +173,7 @@ function Configurator({ onClose }) {
               </ol>
               <div className="config-selection">
                 <small>Aktuelle Auswahl</small>
-                <strong>{getLabel(projectOptions, formData.projectType)}</strong>
+                <strong>{formData.projectTypes.length ? `${formData.projectTypes.length} Projektarten ausgewählt` : 'Noch keine Leistung gewählt'}</strong>
                 <p>Je genauer Ihre Angaben, desto konkreter können wir antworten.</p>
               </div>
             </aside>
@@ -162,10 +185,10 @@ function Configurator({ onClose }) {
                     <>
                       <span className="config-kicker">Schritt 1 von 4</span>
                       <h2>Was dürfen wir für Sie entwickeln?</h2>
-                      <p className="config-intro">Wählen Sie den Schwerpunkt. Weitere Leistungen können wir später kombinieren.</p>
-                      <OptionGroup label="Projektart" options={projectOptions} value={formData.projectType} onSelect={(value) => select('projectType', value)} />
-                      <OptionGroup label="Physische Sichtbarkeit" options={visibilityOptions} value={formData.visibility} onSelect={(value) => select('visibility', value)} />
-                      <OptionGroup label="Website-Paket" options={packageOptions} value={formData.websitePackage} onSelect={(value) => select('websitePackage', value)} />
+                      <p className="config-intro">Mehrfachauswahl ist möglich. Wählen Sie alles, was für Ihr Projekt relevant ist.</p>
+                      <OptionGroup label="Projektarten (Mehrfachauswahl)" options={projectOptions} value={formData.projectTypes} multiple onSelect={toggleProjectType} />
+                      <OptionGroup label="Physische Sichtbarkeit" options={signOptions} value={formData.signType} allowEmpty onSelect={(value) => select('signType', value)} />
+                      {needsWebsitePackage && <OptionGroup label="Website-Paket (optional)" options={packageOptions} value={formData.websitePackage} allowEmpty onSelect={(value) => select('websitePackage', value)} />}
                     </>
                   )}
 
@@ -206,9 +229,9 @@ function Configurator({ onClose }) {
                       <p className="config-intro">Passt alles? Dateien senden Sie anschließend bequem per WhatsApp.</p>
                       <div className="config-summary">
                         {[
-                          ['Projektart', getLabel(projectOptions, formData.projectType)],
-                          ['Physische Sichtbarkeit', getLabel(visibilityOptions, formData.visibility)],
-                          ['Website-Paket', getLabel(packageOptions, formData.websitePackage)],
+                          ['Projektarten', getLabels(projectOptions, formData.projectTypes)],
+                          ['Schildart', getLabel(signOptions, formData.signType, 'Nicht ausgewählt')],
+                          ['Website-Paket', getLabel(packageOptions, formData.websitePackage, 'Nicht ausgewählt')],
                           ['Budgetrahmen', getLabel(budgetOptions, formData.budget)],
                           ['Zeitraum', getLabel(timelineOptions, formData.timeline)],
                           ['Kontakt', `${formData.name}${formData.company ? `, ${formData.company}` : ''}`],

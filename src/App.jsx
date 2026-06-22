@@ -40,6 +40,47 @@ const projects = [
   { image: '/grenady/projects/portfolio-casa-marea.png', label: 'Casa Marea', category: 'Webdesign · Hospitality' },
 ];
 
+const serviceCatalog = [
+  {
+    number: '01',
+    title: 'Web & Commerce',
+    intro: 'Digitale Auftritte und Verkaufsplattformen, die klar aussehen, schnell funktionieren und mit dem Unternehmen wachsen.',
+    items: [
+      { title: 'Websites & Landingpages', text: 'Strategie, UX, Design und Entwicklung.' },
+      { title: 'Relaunch & Optimierung', text: 'Bestehende Auftritte technisch und visuell verbessern.' },
+      { title: 'Shopify & Shopware', text: 'Onlineshops, Relaunches und Conversion-Optimierung.' },
+      { title: 'Service & Wartung', text: 'Laufende Betreuung, Updates und Weiterentwicklung.' },
+      { title: 'Custom Apps & Tools', text: 'Portale und interne Anwendungen für individuelle Abläufe.' },
+    ],
+  },
+  {
+    number: '02',
+    title: 'Marke & Wachstum',
+    intro: 'Eine klare Marke und messbare Reichweite - von der Positionierung bis zur laufenden Kundengewinnung.',
+    items: [
+      { title: 'SEO, SEA, GEO & AI Search', text: 'Sichtbarkeit in Suche, Ads und KI-Antworten.' },
+      { title: 'Logo & Branding', text: 'Positionierung und visuelle Identität.' },
+      { title: 'Copywriting', text: 'Texte für Websites, Shops und Kampagnen.' },
+      { title: 'Social Media Marketing', text: 'Strategie, Content und Kampagnen.' },
+      { title: 'E-Mail-Marketing', text: 'Automationen, Newsletter und Kundenbindung.' },
+      { title: 'Produktfotos & AI Visuals', text: 'Produktfotografie und KI-gestützter Content.' },
+    ],
+  },
+  {
+    number: '03',
+    title: 'KI & Systeme',
+    intro: 'Individuelle Software, intelligente Automationen und robuste Schnittstellen für effizientere Unternehmen.',
+    items: [
+      { title: 'KI-Automatisierung & n8n', text: 'Workflows, Agenten und automatisierte Prozesse.' },
+      { title: 'Chatbots & KI-Assistenten', text: 'Private Assistenten und individuelle Wissenssysteme.' },
+      { title: 'Custom Software', text: 'Maßgeschneiderte Systeme für spezielle Anforderungen.' },
+      { title: 'APIs, TYPO3 & Symfony', text: 'Schnittstellen und robuste Backends.' },
+      { title: 'Consulting & Digitalstrategie', text: 'Technische Beratung von der Idee bis zur Umsetzung.' },
+      { title: 'LED-Schilder & Montage', text: 'Physische Sichtbarkeit inklusive Design und Montage.' },
+    ],
+  },
+];
+
 function GrenadyMark() {
   return (
     <svg className="grenady-mark" viewBox="0 0 42 42" aria-hidden="true">
@@ -142,6 +183,7 @@ function Footer() {
 function App() {
   const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeServiceGroup, setActiveServiceGroup] = useState(0);
 
   const openConfigurator = () => {
     setIsConfiguratorOpen(true);
@@ -163,7 +205,7 @@ function App() {
           <Brand />
 
           <div className="nav-links">
-            <a href="#services">Leistungen <ChevronDown size={14} /></a>
+            <a href="#all-services">Leistungen <ChevronDown size={14} /></a>
             <a href="#projects">Projekte</a>
             <a href="#about">Über uns</a>
             <a href="#knowledge">Wissen</a>
@@ -180,7 +222,7 @@ function App() {
 
         {isMenuOpen && (
           <div className="mobile-menu">
-            <a href="#services" onClick={() => setIsMenuOpen(false)}>Leistungen</a>
+            <a href="#all-services" onClick={() => setIsMenuOpen(false)}>Leistungen</a>
             <a href="#projects" onClick={() => setIsMenuOpen(false)}>Projekte</a>
             <a href="#about" onClick={() => setIsMenuOpen(false)}>Über uns</a>
             <a href="#knowledge" onClick={() => setIsMenuOpen(false)}>Wissen</a>
@@ -212,7 +254,10 @@ function App() {
           </div>
 
           <div className="hero-art" aria-hidden="true">
-            <img src="/grenady/hero-laptop-platform-fullwidth.png" alt="" />
+            <picture>
+              <source media="(max-width: 1100px)" srcSet="/grenady/hero-laptop-platform-narrow.png" />
+              <img src="/grenady/hero-laptop-platform-fullwidth.png" alt="" />
+            </picture>
           </div>
 
           <div id="services" className="service-grid">
@@ -222,7 +267,7 @@ function App() {
                 <div>
                   <h2>{title}</h2>
                   <p>{text}</p>
-                  <a href="#projects">Mehr erfahren <ArrowRight size={16} /></a>
+                  <a href="#all-services">Mehr erfahren <ArrowRight size={16} /></a>
                 </div>
               </article>
             ))}
@@ -246,6 +291,49 @@ function App() {
                 </article>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section id="all-services" className="service-catalog-section">
+          <div className="service-catalog-inner">
+            <header className="catalog-heading">
+              <span>Leistungen</span>
+              <h2>Eine Agentur.<br />Alle Hebel für Wachstum.</h2>
+              <p>Von der ersten Idee bis zum laufenden Betrieb verbinden wir Strategie, Gestaltung, Technologie und Vermarktung.</p>
+              <button className="catalog-cta" onClick={openConfigurator}>Projekt besprechen <ArrowRight size={17} /></button>
+            </header>
+
+            <div className="catalog-tabs" role="tablist" aria-label="Leistungskategorien">
+              {serviceCatalog.map((group, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeServiceGroup === index}
+                  aria-controls="catalog-panel"
+                  className={activeServiceGroup === index ? 'is-active' : ''}
+                  onClick={() => setActiveServiceGroup(index)}
+                  key={group.title}
+                >
+                  <span>{group.number}</span>{group.title}
+                </button>
+              ))}
+            </div>
+
+            <section id="catalog-panel" className="catalog-panel" role="tabpanel">
+              <div className="catalog-panel-intro">
+                <span>{serviceCatalog[activeServiceGroup].number}</span>
+                <h3>{serviceCatalog[activeServiceGroup].title}</h3>
+                <p>{serviceCatalog[activeServiceGroup].intro}</p>
+              </div>
+              <div className="catalog-items">
+                {serviceCatalog[activeServiceGroup].items.map(({ title, text }, index) => (
+                  <article className="catalog-item" key={title}>
+                    <span>{String(index + 1).padStart(2, '0')}</span>
+                    <div><h4>{title}</h4><p>{text}</p></div>
+                  </article>
+                ))}
+              </div>
+            </section>
           </div>
         </section>
 
