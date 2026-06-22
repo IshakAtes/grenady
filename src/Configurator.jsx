@@ -1,73 +1,146 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, ArrowRight, ArrowLeft, UploadCloud, Monitor, Type, Palette, Maximize, TrendingUp, Layout, Printer, Image as ImageIcon } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, Monitor, Layout, Star, Palette, Image as ImageIcon, CheckCircle2, DollarSign, Clock, MessageCircle, Home, Link as LinkIcon } from 'lucide-react';
 
-const serviceOptions = [
-  { id: 'signage', title: 'Schilder & Reklame', desc: 'Leucht- & Firmenschilder', price: 800, priceDisplay: 'ab €800', icon: <Monitor size={24} /> },
-  { id: 'web', title: 'Webdesign', desc: 'Premium Websites', price: 1500, priceDisplay: 'ab €1.500', icon: <Layout size={24} /> },
-  { id: 'print', title: 'Visitenkarten & Flyer', desc: 'Premium Printprodukte', price: 150, priceDisplay: 'ab €150', icon: <Printer size={24} /> },
-  { id: 'seo', title: 'SEO & Sichtbarkeit', desc: 'Lokales Ranking', price: 300, priceDisplay: 'ab €300/mtl.', icon: <TrendingUp size={24} /> },
-  { id: 'logo', title: 'Logo & Branding', desc: 'Markenidentität', price: 500, priceDisplay: 'ab €500', icon: <Palette size={24} /> },
-  { id: 'decor', title: 'Wanddekoration', desc: 'Innenraumgestaltung', price: 300, priceDisplay: 'ab €300', icon: <ImageIcon size={24} /> },
+const WHATSAPP_NUMBER = '+491234567890'; // CONFIGURABLE WHATSAPP NUMBER
+
+const timelineOptions = [
+  { id: 'asap', title: 'So bald wie möglich', desc: 'Schneller Projektstart' },
+  { id: '2-4-weeks', title: 'In 2 - 4 Wochen', desc: 'Start ist konkret geplant' },
+  { id: '1-3-months', title: 'In 1 - 3 Monaten', desc: 'Projekt wird vorbereitet' },
+  { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum noch offen' },
 ];
 
-const Configurator = ({ onClose }) => {
+const getLabel = (options, value, fallback = 'Noch offen') => options.find((option) => option.id === value)?.title || fallback;
+const getLabels = (options, values) => values.map((value) => getLabel(options, value)).join(', ');
+
+function OptionCard({ option, selected, multiple, onSelect }) {
+  const Icon = option.icon;
+  return (
+    <button
+      type="button"
+      className={`config-option ${multiple ? 'is-multiple' : ''} ${selected ? 'is-selected' : ''}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      {Icon && <Icon size={22} strokeWidth={1.8} />}
+      <span><strong>{option.title}</strong><small>{option.desc}</small></span>
+      <span className="option-check"><Check size={13} /></span>
+    </button>
+  );
+}
+
+function OptionGroup({ label, options, value, multiple = false, allowEmpty = false, onSelect }) {
+  return (
+    <fieldset className="config-fieldset">
+      <legend>{label}</legend>
+      <div className="config-options">
+        {options.map((option) => {
+          const selected = multiple ? value.includes(option.id) : value === option.id;
+          return (
+            <OptionCard
+              key={option.id}
+              option={option}
+              selected={selected}
+              multiple={multiple}
+              onSelect={() => onSelect(allowEmpty && selected ? '' : option.id)}
+            />
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+function Configurator({ onClose }) {
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
-    services: ['signage', 'web'], // Default selected
-    size: '',
-    style: '',
+    projectType: '',
+    packageType: '',
+    upsellWeb: 'none',
     colors: '',
-    files: null,
+    existingLogo: '',
+    inspiration: '',
+    timeframe: '',
+    budget: '',
     name: '',
     company: '',
     email: '',
     phone: '',
-    whatsapp: ''
+    notes: '',
   });
-  const [submitted, setSubmitted] = useState(false);
 
-  const handleToggleService = (id) => {
-    setFormData(prev => {
-      const isSelected = prev.services.includes(id);
-      if (isSelected) {
-        return { ...prev, services: prev.services.filter(s => s !== id) };
-      } else {
-        return { ...prev, services: [...prev.services, id] };
-      }
-    });
+  const handleChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const getNextStep = (current) => {
+    if (current === 1) return 2;
+    if (current === 2) return formData.projectType === 'signage' ? 3 : 4;
+    if (current === 3) return 4;
+    if (current === 4) return 5;
+    if (current === 5) return 6;
+    if (current === 6) return 7;
+    return current + 1;
   };
 
-  const handleNext = () => {
-    setStep((prev) => prev + 1);
+  const getPrevStep = (current) => {
+    if (current === 7) return 6;
+    if (current === 6) return 5;
+    if (current === 5) return 4;
+    if (current === 4) return formData.projectType === 'signage' ? 3 : 2;
+    if (current === 3) return 2;
+    if (current === 2) return 1;
+    return current - 1;
   };
 
-  const handleBack = () => {
-    setStep((prev) => prev - 1);
-  };
+  const handleNext = () => setStep(getNextStep(step));
+  const handleBack = () => setStep(getPrevStep(step));
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
-  // Calculate estimated price ranges
-  const getEstimate = () => {
-    let min = 0;
-    formData.services.forEach(serviceId => {
-      const option = serviceOptions.find(o => o.id === serviceId);
-      if (option) min += option.price;
-    });
-
-    if (min === 0) return '---';
-    return `ab €${min.toLocaleString()}`;
+  const isStepValid = () => {
+    if (step === 1) return formData.projectType !== '';
+    if (step === 2) return formData.packageType !== '';
+    if (step === 3) return formData.upsellWeb !== '';
+    if (step === 5) return formData.timeframe !== '' && formData.budget !== '';
+    if (step === 6) return formData.name !== '' && formData.email !== '' && formData.phone !== '';
+    return true;
   };
 
-  // Animations
+  const getEstimate = () => {
+    let estimate = '';
+    let savings = 0;
+
+    if (formData.projectType === 'signage') {
+      if (formData.packageType === 'premium') estimate = '€3.500 – €6.500';
+      if (formData.packageType === 'pro') estimate = '€2.000 – €3.500';
+      if (formData.packageType === 'basic') estimate = '€1.200 – €2.000';
+      if (formData.upsellWeb === 'premium') { estimate = 'ab €6.500'; savings = 800; }
+      if (formData.upsellWeb === 'business') { estimate = 'ab €4.000'; savings = 500; }
+      if (formData.upsellWeb === 'essential') { estimate = 'ab €2.500'; savings = 300; }
+    } else if (formData.projectType === 'web') {
+      if (formData.packageType === 'premium') estimate = '€4.000 – €8.000';
+      if (formData.packageType === 'business') estimate = '€2.000 – €4.000';
+      if (formData.packageType === 'essential') estimate = '€1.000 – €2.000';
+    } else if (formData.projectType === 'complete') {
+      if (formData.packageType === 'premium') { estimate = '€6.500 – €12.000'; savings = 1000; }
+      if (formData.packageType === 'business') { estimate = '€3.500 – €6.500'; savings = 600; }
+      if (formData.packageType === 'essential') { estimate = '€2.000 – €3.500'; savings = 400; }
+    }
+
+    return { estimate, savings };
+  };
+
+  const openWhatsApp = () => {
+    const message = encodeURIComponent("Hallo Skyline Vision, ich habe gerade eine Anfrage über eure Website gestellt. Hier sind meine Fotos und Inspirationen zum Projekt.");
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+  };
+
   const slideVariants = {
     hidden: { opacity: 0, x: 20 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
@@ -75,174 +148,343 @@ const Configurator = ({ onClose }) => {
   };
 
   return (
-    <div className="configurator-overlay" style={overlayStyle}>
-      <div className="glass-panel configurator-modal" style={modalStyle}>
-        <button onClick={onClose} style={closeBtnStyle}>✕</button>
+    <div className="cfg-overlay">
+      <div className="glass-panel cfg-modal">
+        <button onClick={onClose} className="cfg-close">✕</button>
 
         {submitted ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={successStyle}
-          >
-            <div style={glowCircleStyle}>
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="cfg-success">
+            <div className="cfg-success-glow">
               <Check size={48} color="var(--accent-primary)" />
             </div>
-            <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Vielen Dank!</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
-              Ihr Projekt-Briefing ist bei uns eingegangen.<br />Wir melden uns in Kürze mit einem maßgeschneiderten Angebot.
+            <h2 className="text-gradient">Vielen Dank für Ihre Anfrage.</h2>
+            <p className="cfg-success-text">
+              Wir prüfen Ihre Angaben und melden uns schnellstmöglich bei Ihnen.
             </p>
-            <button className="btn-primary" onClick={onClose}>Zurück zur Startseite</button>
-          </motion.div>
-        ) : (
-          <div style={layoutStyle}>
-            {/* Sidebar / Progress */}
-            <div style={sidebarStyle}>
-              <h3 className="text-accent-glow" style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>Projekt-Start</h3>
 
-              <div style={progressContainerStyle}>
-                {[1, 2, 3, 4].map((num) => (
-                  <div key={num} style={{ ...stepItemStyle, opacity: step >= num ? 1 : 0.4 }}>
-                    <div style={{ ...stepCircleStyle, background: step >= num ? 'var(--accent-primary)' : 'transparent', borderColor: step >= num ? 'var(--accent-primary)' : 'var(--border-color)', color: step >= num ? 'white' : 'inherit' }}>
-                      {step > num ? <Check size={12} color="white" /> : num}
-                    </div>
-                    <span style={{ color: step === num ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                      {num === 1 ? 'Leistungen' :
-                        num === 2 ? 'Details' :
-                          num === 3 ? 'Uploads' : 'Kontakt'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={estimateBoxStyle}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Geschätzter Startpreis</p>
-                <p className="text-gradient" style={{ fontSize: '1.8rem', fontWeight: '700' }}>{getEstimate()}</p>
-                {formData.services.length > 1 && (
-                  <div style={{ background: 'rgba(255,123,0,0.1)', color: 'var(--accent-primary)', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold', display: 'inline-block', marginTop: '8px' }}>
-                    Paket-Vorteil möglich
-                  </div>
-                )}
-                <p style={{ color: 'rgba(255,123,0,0.7)', fontSize: '0.8rem', marginTop: '12px', fontStyle: 'italic' }}>
-                  *Endgültiger Preis wird nach individuellem Aufwand berechnet.
-                </p>
-              </div>
+            <div className="cfg-success-card">
+              <h4><MessageCircle size={20} color="#25D366" /> Nächster Schritt</h4>
+              <p>
+                Damit wir Ihr Projekt schneller vorbereiten können, senden Sie uns gerne zusätzlich Fotos, Logos, Videos, Screenshots oder Inspirationen direkt per WhatsApp.
+              </p>
+              <button className="btn-primary cfg-wa-btn" onClick={openWhatsApp}>
+                <MessageCircle size={20} /> 📱 Dateien per WhatsApp senden
+              </button>
             </div>
 
-            {/* Main Content Area */}
-            <div style={contentStyle}>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <button className="btn-secondary" style={{ background: 'transparent' }} onClick={onClose}>
+                <Home size={18} /> Zurück zur Startseite
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="cfg-layout">
+            {/* Header / Progress */}
+            <div className="cfg-header">
+              <h3 className="text-accent-glow cfg-header-title">Projekt konfigurieren</h3>
+              <p className="cfg-header-subtitle">Teilen Sie uns Ihre Wünsche mit und erhalten Sie eine maßgeschneiderte Einschätzung.</p>
+
+              <div className="cfg-progress">
+                <div className="cfg-progress-track">
+                  <div className="cfg-progress-fill" style={{ width: `${(step / 7) * 100}%` }}></div>
+                </div>
+                <span className="cfg-progress-label">Schritt {step} von 7</span>
+              </div>
+            </aside>
+
+            {/* Content Area */}
+            <div className="cfg-content">
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  variants={slideVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-                >
-                  <div style={{ flex: 1 }}>
+                <motion.div key={step} variants={slideVariants} initial="hidden" animate="visible" exit="exit" className="cfg-step-container">
+                  <div className="cfg-step-body">
+
+                    {/* STEP 1: Project Type */}
                     {step === 1 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Was benötigen Sie?</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Wählen Sie alle gewünschten Leistungen für Ihr Projekt aus. Mehrere Auswahlen sind möglich.</p>
-
-                        <div className="grid-cols-2" style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-                          {serviceOptions.map((service) => (
-                            <RadioOption
-                              key={service.id}
-                              icon={service.icon}
-                              title={service.title}
-                              desc={service.desc}
-                              priceRange={service.priceDisplay}
-                              selected={formData.services.includes(service.id)}
-                              onClick={() => handleToggleService(service.id)}
-                            />
-                          ))}
+                        <h2 className="cfg-step-headline">Was benötigen Sie?</h2>
+                        <div className="cfg-options-grid">
+                          <RadioOption
+                            icon={<Monitor size={28} />}
+                            title="Premium Signage"
+                            desc="Auffällige Leuchtschilder & Reklame für Ihr Geschäft."
+                            selected={formData.projectType === 'signage'}
+                            onClick={() => handleChange('projectType', 'signage')}
+                          />
+                          <RadioOption
+                            icon={<Layout size={28} />}
+                            title="Web Design"
+                            desc="Conversion-optimierte professionelle Websites."
+                            selected={formData.projectType === 'web'}
+                            onClick={() => handleChange('projectType', 'web')}
+                          />
+                          <RadioOption
+                            icon={<Star size={28} />}
+                            title="Complete Visibility Package"
+                            desc="Schilder und Website passend zu Ihrer Markenidentität."
+                            badge="EMPFEHLUNG"
+                            selected={formData.projectType === 'complete'}
+                            onClick={() => handleChange('projectType', 'complete')}
+                          />
                         </div>
                       </>
                     )}
 
+                    {/* STEP 2: Package Selection */}
                     {step === 2 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Projektdetails</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Geben Sie uns eine Vorstellung davon, was Sie im Sinn haben.</p>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                          <div>
-                            <label style={labelStyle}><Maximize size={16} /> Abmessungen / Spezifikationen (Optional)</label>
-                            <input type="text" name="size" value={formData.size} onChange={handleChange} className="form-input" placeholder="z.B. Schildergröße, Seitenanzahl der Website etc." />
-                          </div>
-                          <div>
-                            <label style={labelStyle}><Type size={16} /> Bevorzugter Stil</label>
-                            <input type="text" name="style" value={formData.style} onChange={handleChange} className="form-input" placeholder="z.B. Minimalistisch, Auffällig, Corporate" />
-                          </div>
-                          <div>
-                            <label style={labelStyle}><Palette size={16} /> Markenfarben / CI</label>
-                            <input type="text" name="colors" value={formData.colors} onChange={handleChange} className="form-input" placeholder="z.B. Schwarz & Gold, Rot & Weiß" />
-                          </div>
+                        <h2 className="cfg-step-headline">Wählen Sie Ihr Paket</h2>
+                        <p className="cfg-step-desc">Wir bieten maßgeschneiderte Lösungen für jeden Anspruch.</p>
+                        <div className="cfg-options-grid">
+                          {(formData.projectType === 'signage' || formData.projectType === 'complete') ? (
+                            <>
+                              <RadioOption
+                                title="PREMIUM (Signage)"
+                                desc="Premium-Materialien, komplettes Design, LED-Beleuchtung, priorisierte Produktion und Montageplanung."
+                                price="€3.500 – €6.500"
+                                badge="✓ BEST VALUE"
+                                selected={formData.packageType === 'premium'}
+                                onClick={() => handleChange('packageType', 'premium')}
+                              />
+                              <RadioOption
+                                title="PRO (Signage)"
+                                desc="Hochwertige Materialien, professionelle Beratung, LED-Optionen verfügbar, verbesserte Langlebigkeit."
+                                price="€2.000 – €3.500"
+                                badge="⭐ MOST POPULAR"
+                                badgeColor="#2a2a2e"
+                                selected={formData.packageType === 'pro'}
+                                onClick={() => handleChange('packageType', 'pro')}
+                              />
+                              <RadioOption
+                                title="BASIC (Signage)"
+                                desc="Standardmaterialien, einfache Produktion, ohne Beleuchtung, Basisberatung."
+                                price="€1.200 – €2.000"
+                                selected={formData.packageType === 'basic'}
+                                onClick={() => handleChange('packageType', 'basic')}
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <RadioOption
+                                title="PREMIUM (Website)"
+                                desc="Individuelles Premium-Design, fortgeschrittene Animationen, Lead-Generierung und Performance-Optimierung."
+                                price="ab €4.000"
+                                badge="✓ BEST VALUE"
+                                selected={formData.packageType === 'premium'}
+                                onClick={() => handleChange('packageType', 'premium')}
+                              />
+                              <RadioOption
+                                title="BUSINESS (Website)"
+                                desc="Multi-Page Website, conversion-optimiertes Layout, Kontaktformulare, lokales Basis-SEO."
+                                price="€2.000 – €4.000"
+                                badge="⭐ MOST CHOSEN"
+                                badgeColor="#2a2a2e"
+                                selected={formData.packageType === 'business'}
+                                onClick={() => handleChange('packageType', 'business')}
+                              />
+                              <RadioOption
+                                title="ESSENTIAL (Website)"
+                                desc="Moderne One-Page Website, mobil responsiv, cleanes Design."
+                                price="€1.000 – €2.000"
+                                selected={formData.packageType === 'basic'}
+                                onClick={() => handleChange('packageType', 'basic')}
+                              />
+                            </>
+                          )}
                         </div>
+                        <p className="cfg-microcopy">
+                          <Check size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />
+                          Die meisten Kunden wählen die PRO oder BUSINESS Option für maximale Sichtbarkeit.
+                        </p>
                       </>
                     )}
 
-                    {step === 3 && (
+                    {/* STEP 3: Upsell (Signage only) */}
+                    {step === 3 && formData.projectType === 'signage' && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Materialien hochladen</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Haben Sie bereits ein Logo, Bilder vom Ladenlokal oder Inspirationen? Hier ablegen (Optional).</p>
-
-                        <div style={uploadAreaStyle}>
-                          <UploadCloud size={48} color="var(--accent-primary)" style={{ marginBottom: '1rem' }} />
-                          <p style={{ marginBottom: '0.5rem', fontWeight: '500' }}>Zum Durchsuchen klicken oder Drag & Drop</p>
-                          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>SVG, PNG, JPG, PDF (Max 10MB)</p>
-                          <input type="file" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} />
+                        <h2 className="cfg-step-headline">Maximieren Sie Ihre Sichtbarkeit</h2>
+                        <p className="cfg-step-desc">Möchten Sie zusätzlich eine professionelle Website, die perfekt zu Ihrem neuen Branding passt?</p>
+                        <div className="cfg-options-grid">
+                          <RadioOption
+                            title="Premium Website hinzufügen"
+                            desc="Individuelle Web-Erfahrung für maximale Conversions."
+                            selected={formData.upsellWeb === 'premium'}
+                            onClick={() => handleChange('upsellWeb', 'premium')}
+                          />
+                          <RadioOption
+                            title="Business Website hinzufügen"
+                            desc="Multi-Page Setup, um lokal neue Kunden zu gewinnen."
+                            badge="⭐ EMPFEHLUNG"
+                            selected={formData.upsellWeb === 'business'}
+                            onClick={() => handleChange('upsellWeb', 'business')}
+                          />
+                          <RadioOption
+                            title="Essential Website hinzufügen"
+                            desc="Ein moderner One-Pager für Ihre digitale Präsenz."
+                            selected={formData.upsellWeb === 'essential'}
+                            onClick={() => handleChange('upsellWeb', 'essential')}
+                          />
+                          <RadioOption
+                            title="Nein danke"
+                            desc="Ich benötige aktuell nur Schilder & Reklame."
+                            selected={formData.upsellWeb === 'none'}
+                            onClick={() => handleChange('upsellWeb', 'none')}
+                          />
                         </div>
+                        {formData.upsellWeb !== 'none' && formData.upsellWeb !== '' && (
+                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="cfg-bundle-banner">
+                            <Star color="var(--accent-primary)" size={20} />
+                            <span>
+                              Bundle-Vorteil aktiv: Sie sparen ca. €{formData.upsellWeb === 'premium' ? 800 : formData.upsellWeb === 'business' ? 500 : 300} durch die Kombination von Schilder- & Webdesign.
+                            </span>
+                          </motion.div>
+                        )}
                       </>
                     )}
 
+                    {/* STEP 4: Details & Inspiration */}
                     {step === 4 && (
                       <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Kontaktdaten</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>Fast geschafft! Wie können wir Sie erreichen?</p>
+                        <h2 className="cfg-step-headline">Details & Inspiration</h2>
+                        <div className="cfg-form-grid">
+                          <div>
+                            <label className="cfg-label"><Palette size={18} /> Bevorzugte Farben / CI</label>
+                            <input type="text" value={formData.colors} onChange={e => handleChange('colors', e.target.value)} className="form-input" placeholder="z.B. Schwarz & Gold" />
+                          </div>
+                          <div>
+                            <label className="cfg-label"><ImageIcon size={18} /> Haben Sie bereits ein Logo?</label>
+                            <div className="cfg-logo-btns">
+                              <button type="button" className={`btn-select ${formData.existingLogo === 'Ja' ? 'active' : ''}`} onClick={() => handleChange('existingLogo', 'Ja')}>Ja</button>
+                              <button type="button" className={`btn-select ${formData.existingLogo === 'Nein, bitte gestalten' ? 'active' : ''}`} onClick={() => handleChange('existingLogo', 'Nein, bitte gestalten')}>Nein, ich benötige eins</button>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="cfg-label"><LinkIcon size={18} /> Inspiration (Optional)</label>
+                            <textarea
+                              value={formData.inspiration}
+                              onChange={e => handleChange('inspiration', e.target.value)}
+                              className="form-input cfg-textarea"
+                              placeholder="Haben Sie Websites oder Schilder gesehen, die Ihnen gefallen? Fügen Sie hier Links ein."
+                            ></textarea>
 
-                        <form id="lead-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
-                            <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firmenname" />
+                            <div className="cfg-whatsapp-hint">
+                              <div style={{ marginTop: '2px', flexShrink: 0 }}><MessageCircle size={20} color="#25D366" /></div>
+                              <div>
+                                {formData.projectType === 'signage' || formData.projectType === 'complete' ? (
+                                  <p>💡 Haben Sie bereits Fotos Ihres Geschäfts, Ihr Logo oder Beispiele, die Ihnen gefallen? Sie können uns diese später ganz unkompliziert per WhatsApp senden.</p>
+                                ) : (
+                                  <p>🌐 Haben Sie Websites gesehen, die Ihnen gefallen? Fügen Sie die Links hier ein oder schicken Sie uns Screenshots später per WhatsApp.</p>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
-                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                            <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
-                            <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleChange} className="form-input" placeholder="WhatsApp (Optional)" />
-                          </div>
-                        </form>
+                        </div>
                       </>
                     )}
-                  </div>
 
-                  {/* Navigation Buttons */}
-                  <div style={navButtonsStyle}>
-                    {step > 1 ? (
-                      <button className="btn-secondary" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ArrowLeft size={16} /> Zurück
-                      </button>
-                    ) : <div></div>}
-
-                    {step < 4 ? (
-                      <button
-                        className="btn-primary"
-                        onClick={handleNext}
-                        disabled={(step === 1 && formData.services.length === 0)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: (step === 1 && formData.services.length === 0) ? 0.5 : 1 }}
-                      >
-                        Weiter <ArrowRight size={16} />
-                      </button>
-                    ) : (
-                      <button type="submit" form="lead-form" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Mein Angebot anfordern <Check size={16} />
-                      </button>
+                    {/* STEP 5: Lead Quality Filter */}
+                    {step === 5 && (
+                      <>
+                        <h2 className="cfg-step-headline">Lassen Sie uns Erwartungen klären</h2>
+                        <p className="cfg-step-desc">Für die bestmögliche Empfehlung benötigen wir Ihren groben Zeitrahmen und das Budget.</p>
+                        <div className="cfg-form-grid">
+                          <div>
+                            <label className="cfg-label"><Clock size={18} /> Geschätzter Zeitrahmen?</label>
+                            <div className="cfg-btn-grid">
+                              {['So schnell wie möglich', 'Innerhalb 1 Monats', 'Innerhalb 3 Monaten', 'Sammle nur Ideen'].map(tf => (
+                                <button key={tf} type="button" className={`btn-select ${formData.timeframe === tf ? 'active' : ''}`} onClick={() => handleChange('timeframe', tf)}>{tf}</button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="cfg-label"><DollarSign size={18} /> Ungefähres Budget?</label>
+                            <div className="cfg-btn-grid">
+                              {['Unter €1.500', '€1.500 – €3.000', '€3.000 – €6.000', 'Über €6.000'].map(bg => (
+                                <button key={bg} type="button" className={`btn-select ${formData.budget === bg ? 'active' : ''}`} onClick={() => handleChange('budget', bg)}>{bg}</button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="cfg-microcopy">
+                          „Viele Kunden upgraden später, aber Ihr Start-Budget hilft uns, das perfekte Basispaket zu finden."
+                        </p>
+                      </>
                     )}
+
+                    {/* STEP 6: Contact Details */}
+                    {step === 6 && (
+                      <>
+                        <h2 className="cfg-step-headline">Ihre Kontaktdaten</h2>
+                        <p className="cfg-step-desc">Fast geschafft! Wohin sollen wir die Projekt-Einschätzung senden?</p>
+                        <form id="lead-form" className="cfg-form-grid">
+                          <div className="cfg-form-row">
+                            <input type="text" value={formData.name} onChange={e => handleChange('name', e.target.value)} required className="form-input" placeholder="Ihr Name *" />
+                            <input type="text" value={formData.company} onChange={e => handleChange('company', e.target.value)} className="form-input" placeholder="Firmenname" />
+                          </div>
+                          <input type="email" value={formData.email} onChange={e => handleChange('email', e.target.value)} required className="form-input" placeholder="E-Mail-Adresse *" />
+                          <div className="cfg-form-row">
+                            <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} required className="form-input" placeholder="Telefonnummer *" />
+                            <input type="tel" value={formData.whatsapp} onChange={e => handleChange('whatsapp', e.target.value)} className="form-input" placeholder="WhatsApp Nummer (Optional)" />
+                          </div>
+                        </form>
+
+                        <p className="cfg-wa-footer">
+                          <MessageCircle size={16} color="#25D366" /> 📱 Nach dem Absenden können Sie uns Fotos, Logos, Videos oder Inspirationen direkt per WhatsApp senden.
+                        </p>
+                      </>
+                    )}
+
+                    {/* STEP 7: Estimate */}
+                    {step === 7 && (
+                      <>
+                        <h2 className="cfg-step-headline">Ihre Projekteinschätzung</h2>
+                        <div className="glass-panel cfg-estimate-card">
+                          <p className="cfg-estimate-label">Voraussichtlicher Investitionsrahmen</p>
+                          <h3 className="text-gradient cfg-estimate-value">{getEstimate().estimate}</h3>
+
+                          <div className="cfg-estimate-details">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle2 size={16} color="var(--accent-primary)" /> Projekt: {formData.projectType.toUpperCase()}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle2 size={16} color="var(--accent-primary)" /> Paket: {formData.packageType.toUpperCase()}</div>
+                            {getEstimate().savings > 0 && (
+                              <div style={{ color: 'var(--accent-primary)', fontWeight: 'bold', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Star size={16} /> Inklusive ~€{getEstimate().savings} Bundle-Ersparnis
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <p className="cfg-trust-text">
+                          Wir werden Ihre Anfrage persönlich prüfen und Ihnen eine maßgeschneiderte Empfehlung aussprechen.
+                        </p>
+                      </>
+                    )}
+
                   </div>
                 </motion.div>
               </AnimatePresence>
+            </div>
+
+            {/* Bottom Navigation */}
+            <div className="cfg-nav">
+              {step > 1 ? (
+                <button className="btn-secondary" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ArrowLeft size={18} /> Zurück
+                </button>
+              ) : <div className="cfg-nav-spacer"></div>}
+
+              {step < 7 ? (
+                <button
+                  className="btn-primary"
+                  onClick={handleNext}
+                  disabled={!isStepValid()}
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: isStepValid() ? 1 : 0.5 }}
+                >
+                  Weiter <ArrowRight size={18} />
+                </button>
+              ) : (
+                <button onClick={handleSubmit} disabled={!isStepValid()} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: isStepValid() ? 1 : 0.5 }}>
+                  Anfrage absenden <Check size={18} />
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -251,217 +493,25 @@ const Configurator = ({ onClose }) => {
   );
 };
 
-const RadioOption = ({ icon, title, desc, priceRange, selected, onClick, badge, badgeColor, badgeTextColor }) => (
+const RadioOption = ({ icon, title, desc, price, selected, onClick, badge, badgeColor }) => (
   <div
     className={`radio-card ${selected ? 'selected' : ''}`}
     onClick={onClick}
-    style={{
-      border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-      transform: selected ? 'scale(1.02)' : 'scale(1)',
-      boxShadow: selected ? '0 8px 30px rgba(255,123,0,0.15)' : 'none',
-      padding: '16px',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column'
-    }}
   >
     {badge && (
-      <div style={{
-        position: 'absolute',
-        top: '-12px',
-        right: '20px',
-        background: badgeColor || 'var(--accent-primary)',
-        color: badgeTextColor || 'white',
-        fontSize: '0.75rem',
-        fontWeight: 'bold',
-        padding: '4px 12px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
-      }}>
+      <div className="radio-card-badge" style={{ background: badgeColor || 'var(--accent-primary)' }}>
         {badge}
       </div>
     )}
-    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '8px' }}>
-      {icon && <div style={{ color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>{icon}</div>}
-      <div>
-        <h4 style={{ fontSize: '1.1rem', marginBottom: '4px', lineHeight: '1.2' }}>
-          {title}
-        </h4>
+    {icon && <div style={{ color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)', flexShrink: 0 }}>{icon}</div>}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="radio-card-header">
+        <h4 className="radio-card-title">{title}</h4>
+        {price && <span className="radio-card-price">{price}</span>}
       </div>
-    </div>
-    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '12px', flex: 1 }}>{desc}</p>
-    <div style={{ textAlign: 'left', borderTop: '1px solid var(--border-color)', width: '100%', paddingTop: '8px' }}>
-      <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: selected ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{priceRange}</span>
+      {desc && <p className="radio-card-desc">{desc}</p>}
     </div>
   </div>
 );
-
-// Inline Styles
-const overlayStyle = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'var(--bg-overlay)',
-  backdropFilter: 'blur(10px)',
-  zIndex: 1000,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: '20px'
-};
-
-const modalStyle = {
-  width: '100%',
-  maxWidth: '1000px',
-  height: '85vh',
-  maxHeight: '800px',
-  position: 'relative',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  boxShadow: '0 25px 50px -12px rgba(255, 123, 0, 0.15)'
-};
-
-const closeBtnStyle = {
-  position: 'absolute',
-  top: '20px',
-  right: '20px',
-  background: 'var(--close-btn-bg)',
-  borderRadius: '50%',
-  width: '36px',
-  height: '36px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: 'none',
-  color: 'var(--text-primary)',
-  fontSize: '1.2rem',
-  cursor: 'pointer',
-  zIndex: 10,
-  transition: 'all 0.2s ease'
-};
-
-const layoutStyle = {
-  display: 'flex',
-  height: '100%',
-  flexDirection: 'row',
-  '@media (maxWidth: 768px)': {
-    flexDirection: 'column'
-  }
-};
-
-const sidebarStyle = {
-  width: '320px',
-  background: 'var(--bg-sidebar)',
-  borderRight: '1px solid var(--border-color)',
-  padding: '40px 30px',
-  display: 'flex',
-  flexDirection: 'column',
-  '@media (maxWidth: 768px)': {
-    width: '100%',
-    padding: '20px',
-    height: 'auto',
-    borderRight: 'none',
-    borderBottom: '1px solid var(--border-color)'
-  }
-};
-
-const contentStyle = {
-  flex: 1,
-  padding: '60px 80px',
-  overflowY: 'auto',
-  '@media (maxWidth: 768px)': {
-    padding: '30px 20px'
-  }
-};
-
-const progressContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '24px',
-  marginBottom: 'auto'
-};
-
-const stepItemStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-  transition: 'opacity 0.3s ease'
-};
-
-const stepCircleStyle = {
-  width: '28px',
-  height: '28px',
-  borderRadius: '50%',
-  border: '2px solid',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  fontSize: '0.8rem',
-  fontWeight: 'bold',
-  transition: 'all 0.3s ease'
-};
-
-const estimateBoxStyle = {
-  background: 'rgba(255, 123, 0, 0.05)',
-  border: '1px solid var(--border-accent)',
-  borderRadius: '12px',
-  padding: '20px',
-  marginTop: '40px'
-};
-
-const navButtonsStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  marginTop: '40px',
-  paddingTop: '20px',
-  borderTop: '1px solid var(--border-color)'
-};
-
-const labelStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  marginBottom: '8px',
-  color: 'var(--text-secondary)'
-};
-
-const uploadAreaStyle = {
-  border: '2px dashed var(--border-color)',
-  borderRadius: '12px',
-  padding: '40px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--upload-bg)',
-  position: 'relative',
-  transition: 'all 0.3s ease',
-  cursor: 'pointer'
-};
-
-const successStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '100%',
-  textAlign: 'center',
-  padding: '40px'
-};
-
-const glowCircleStyle = {
-  width: '100px',
-  height: '100px',
-  borderRadius: '50%',
-  background: 'var(--accent-muted)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: '2rem',
-  boxShadow: '0 0 50px var(--accent-muted)'
-};
 
 export default Configurator;
