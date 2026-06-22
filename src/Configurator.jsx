@@ -1,65 +1,101 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
+  Bot,
   Check,
-  Clock,
-  Euro,
-  Image as ImageIcon,
-  Layout,
-  Link as LinkIcon,
-  MessageSquare,
+  CheckCircle2,
+  Code2,
+  ExternalLink,
+  Globe2,
+  LayoutTemplate,
+  Link2,
+  Megaphone,
+  MessageCircle,
   Monitor,
   Palette,
-  Phone,
-  Printer,
-  TrendingUp,
-  Type,
+  Search,
+  ShoppingBag,
+  Sparkles,
+  Wrench,
+  X,
 } from 'lucide-react';
 import { getWhatsappUrl } from './config/whatsapp';
 
 const projectOptions = [
-  { id: 'signage', title: 'Schilder & Reklame', desc: 'Leuchtreklame, Firmenschilder, LED-Schilder', icon: <Monitor size={24} /> },
-  { id: 'website', title: 'Webdesign', desc: 'Website, Landingpage oder Relaunch', icon: <Layout size={24} /> },
-  { id: 'visibility', title: 'Komplettes Sichtbarkeitspaket', desc: 'Schilder und Website aus einer Hand', icon: <TrendingUp size={24} /> },
-  { id: 'branding', title: 'Branding & Print', desc: 'Logo, Visitenkarten, Flyer oder Wandgestaltung', icon: <Palette size={24} /> },
+  { id: 'website', title: 'Website erstellen', desc: 'Neue Website, Landingpage oder Webdesign-Projekt', icon: LayoutTemplate },
+  { id: 'relaunch', title: 'Website Relaunch', desc: 'Bestehenden Auftritt technisch und visuell verbessern', icon: Sparkles },
+  { id: 'shop', title: 'Onlineshop', desc: 'Shopify, Shopware, Relaunch oder Optimierung', icon: ShoppingBag },
+  { id: 'seo', title: 'SEO / SEA / GEO', desc: 'Mehr Nachfrage über Suche, Ads und AI Search', icon: Search },
+  { id: 'branding', title: 'Logo & Branding', desc: 'Markenauftritt, Designsystem und Copywriting', icon: Palette },
+  { id: 'software', title: 'Software & APIs', desc: 'Apps, interne Tools, Schnittstellen und Symfony APIs', icon: Code2 },
+  { id: 'retainer', title: 'Retainer & Wartung', desc: 'Laufende Betreuung und Weiterentwicklung', icon: Wrench },
+  { id: 'marketing', title: 'Marketing & Automation', desc: 'Social, E-Mail, n8n und AI Automation', icon: Megaphone },
 ];
 
-const signTypeOptions = [
-  { id: 'illuminated', title: 'Leuchtreklame', desc: 'Auffällig bei Tag und Nacht', icon: <ImageIcon size={24} /> },
-  { id: 'company', title: 'Firmenschild', desc: 'Premium-Schild für Fassade, Praxis oder Büro', icon: <Printer size={24} /> },
-  { id: 'led', title: 'LED-Schild', desc: 'Modern, hell und aufmerksamkeitsstark', icon: <Monitor size={24} /> },
-  { id: 'unsure', title: 'Noch offen', desc: 'Wir beraten zur passenden Lösung', icon: <MessageSquare size={24} /> },
+const visibilityOptions = [
+  { id: 'digital', title: 'Rein digital', desc: 'Website, Shop, Branding oder Marketing', icon: Globe2 },
+  { id: 'led', title: 'LED-Schild ergänzen', desc: 'Design, Produktion und Montage am Standort', icon: Monitor },
+  { id: 'unsure', title: 'Noch offen', desc: 'Wir beraten zur passenden Kombination', icon: MessageCircle },
 ];
 
-const websitePackageOptions = [
-  { id: 'starter', title: 'Starter Website', desc: 'Kompakte Website für lokale Sichtbarkeit' },
-  { id: 'premium', title: 'Premium Website', desc: 'Mehr Seiten, stärkere Wirkung, bessere Conversion' },
-  { id: 'relaunch', title: 'Relaunch', desc: 'Bestehende Website hochwertig erneuern' },
-  { id: 'unsure', title: 'Noch offen', desc: 'Wir empfehlen ein passendes Paket' },
+const packageOptions = [
+  { id: 'website', title: 'Website', desc: 'Strategie, Design und Entwicklung' },
+  { id: 'shop', title: 'Onlineshop', desc: 'Shopify oder Shopware' },
+  { id: 'branding', title: 'Branding', desc: 'Logo, Designsystem und Texte' },
+  { id: 'growth', title: 'Growth', desc: 'SEO, SEA, GEO und AI Search' },
+  { id: 'software', title: 'Custom System', desc: 'App, API oder internes Tool' },
+  { id: 'retainer', title: 'Retainer', desc: 'Wartung und laufende Optimierung' },
 ];
 
 const budgetOptions = [
-  { id: 'under-1000', title: 'Bis 1.000 EUR', desc: 'Kleines Projekt oder Einstieg' },
-  { id: '1000-3000', title: '1.000 - 3.000 EUR', desc: 'Solider Rahmen für lokale Sichtbarkeit' },
-  { id: '3000-7000', title: '3.000 - 7.000 EUR', desc: 'Premium-Auftritt mit mehr Umfang' },
-  { id: '7000-plus', title: 'Über 7.000 EUR', desc: 'Umfangreiches Sichtbarkeitssystem' },
-  { id: 'unsure', title: 'Noch offen', desc: 'Budget gemeinsam einschätzen' },
+  { id: 'under-3000', title: 'Bis 3.000 EUR', desc: 'Kompakter Einstieg' },
+  { id: '3000-7000', title: '3.000 - 7.000 EUR', desc: 'Professioneller Auftritt' },
+  { id: '7000-15000', title: '7.000 - 15.000 EUR', desc: 'Umfangreiches Projekt' },
+  { id: '15000-plus', title: 'Über 15.000 EUR', desc: 'Individuelles System' },
+  { id: 'unsure', title: 'Noch offen', desc: 'Gemeinsam einordnen' },
 ];
 
 const timelineOptions = [
-  { id: 'asap', title: 'So schnell wie möglich', desc: 'Priorität auf zügiger Umsetzung' },
-  { id: '2-4-weeks', title: 'In 2 - 4 Wochen', desc: 'Konkreter Start ist geplant' },
+  { id: 'asap', title: 'So bald wie möglich', desc: 'Schneller Projektstart' },
+  { id: '2-4-weeks', title: 'In 2 - 4 Wochen', desc: 'Start ist konkret geplant' },
   { id: '1-3-months', title: 'In 1 - 3 Monaten', desc: 'Projekt wird vorbereitet' },
-  { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum ist noch offen' },
+  { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum noch offen' },
 ];
 
-const Configurator = ({ onClose }) => {
+const getLabel = (options, value) => options.find((option) => option.id === value)?.title || 'Noch offen';
+
+function OptionCard({ option, selected, onSelect }) {
+  const Icon = option.icon;
+  return (
+    <button type="button" className={`config-option ${selected ? 'is-selected' : ''}`} onClick={onSelect}>
+      {Icon && <Icon size={22} strokeWidth={1.8} />}
+      <span><strong>{option.title}</strong><small>{option.desc}</small></span>
+      <span className="option-check"><Check size={13} /></span>
+    </button>
+  );
+}
+
+function OptionGroup({ label, options, value, onSelect }) {
+  return (
+    <fieldset className="config-fieldset">
+      <legend>{label}</legend>
+      <div className="config-options">
+        {options.map((option) => (
+          <OptionCard key={option.id} option={option} selected={value === option.id} onSelect={() => onSelect(option.id)} />
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+function Configurator({ onClose }) {
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     projectType: '',
-    signType: '',
+    visibility: '',
     websitePackage: '',
     budget: '',
     timeline: '',
@@ -70,248 +106,124 @@ const Configurator = ({ onClose }) => {
     phone: '',
     notes: '',
   });
-  const [submitted, setSubmitted] = useState(false);
 
-  const canProceed =
-    (step === 1 && formData.projectType) ||
-    step === 2 ||
-    (step === 3 && formData.name && formData.email && formData.phone);
-
-  const handleSelect = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleNext = () => {
-    if (!canProceed) return;
-    setStep((prev) => prev + 1);
-  };
-
-  const handleBack = () => {
-    setStep((prev) => prev - 1);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
-
-  const getSelectedLabel = (options, value) => options.find((option) => option.id === value)?.title || 'Noch offen';
-
-  const slideVariants = {
-    hidden: { opacity: 0, x: 20 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
-    exit: { opacity: 0, x: -20, transition: { duration: 0.3 } },
-  };
+  const canProceed = step === 1 ? Boolean(formData.projectType) : step === 3 ? Boolean(formData.name && formData.email && formData.phone) : true;
+  const select = (name, value) => setFormData((current) => ({ ...current, [name]: value }));
+  const change = (event) => setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
+  const submit = (event) => { event?.preventDefault(); setSubmitted(true); };
 
   return (
-    <div className="configurator-overlay" style={overlayStyle}>
-      <div className="glass-panel configurator-modal" style={modalStyle}>
-        <button onClick={onClose} style={closeBtnStyle}>×</button>
+    <div className="configurator-overlay" role="dialog" aria-modal="true" aria-label="Projektanfrage">
+      <div className="configurator-modal">
+        <button className="config-close" onClick={onClose} aria-label="Konfigurator schließen"><X size={20} /></button>
 
         {submitted ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            style={successStyle}
-          >
-            <div style={glowCircleStyle}>
-              <Check size={48} color="var(--accent-primary)" />
+          <motion.div className="config-success" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
+            <div className="success-icon"><CheckCircle2 size={40} /></div>
+            <span className="config-kicker">Anfrage eingegangen</span>
+            <h2>Vielen Dank für Ihre Anfrage.</h2>
+            <p>Wir prüfen Ihre Angaben und melden uns schnellstmöglich bei Ihnen.</p>
+            <p className="success-note">Senden Sie uns gerne Fotos, Logos, Videos, Screenshots oder Inspirationen direkt per WhatsApp.</p>
+            <div className="success-actions">
+              <a className="config-button whatsapp-button" href={getWhatsappUrl()} target="_blank" rel="noreferrer">
+                <MessageCircle size={19} /> Dateien per WhatsApp senden <ExternalLink size={15} />
+              </a>
+              <button className="config-button secondary" onClick={onClose}>Zurück zur Startseite</button>
             </div>
-            <h2 className="text-gradient" style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
-              Vielen Dank für Ihre Anfrage.
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '2rem' }}>
-              Wir prüfen Ihre Angaben und melden uns schnellstmöglich bei Ihnen.
-            </p>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: '560px', marginBottom: '2rem' }}>
-              Senden Sie uns gerne Fotos, Logos, Videos, Screenshots oder Inspirationen direkt per WhatsApp.
-            </p>
-            <a
-              className="btn-primary"
-              href={getWhatsappUrl()}
-              target="_blank"
-              rel="noreferrer"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '1rem' }}
-            >
-              📱 Dateien per WhatsApp senden
-            </a>
-            <button className="btn-secondary" onClick={onClose}>Zurück zur Startseite</button>
           </motion.div>
         ) : (
-          <div style={layoutStyle}>
-            <div style={sidebarStyle}>
-              <h3 className="text-accent-glow" style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>Projekt-Start</h3>
-
-              <div style={progressContainerStyle}>
-                {[1, 2, 3, 4].map((num) => (
-                  <div key={num} style={{ ...stepItemStyle, opacity: step >= num ? 1 : 0.4 }}>
-                    <div style={{ ...stepCircleStyle, background: step >= num ? 'var(--accent-primary)' : 'transparent', borderColor: step >= num ? 'var(--accent-primary)' : 'var(--border-color)', color: step >= num ? 'white' : 'inherit' }}>
-                      {step > num ? <Check size={12} color="white" /> : num}
-                    </div>
-                    <span style={{ color: step === num ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
-                      {num === 1 ? 'Projekt' : num === 2 ? 'Rahmen' : num === 3 ? 'Kontakt' : 'Absenden'}
-                    </span>
-                  </div>
-                ))}
+          <div className="config-layout">
+            <aside className="config-sidebar">
+              <div>
+                <span className="config-kicker">Grenady</span>
+                <h2>Projekt starten</h2>
               </div>
-
-              <div style={estimateBoxStyle}>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>Aktuelle Auswahl</p>
-                <p className="text-gradient" style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '12px' }}>
-                  {getSelectedLabel(projectOptions, formData.projectType)}
-                </p>
-                <p style={{ color: 'rgba(255,123,0,0.8)', fontSize: '0.85rem', lineHeight: 1.5 }}>
-                  Je genauer die Angaben, desto schneller können wir ein passendes Angebot vorbereiten.
-                </p>
+              <ol className="config-progress">
+                {['Projekt', 'Rahmen', 'Kontakt', 'Prüfen'].map((label, index) => {
+                  const number = index + 1;
+                  return (
+                    <li className={step >= number ? 'is-active' : ''} key={label}>
+                      <span>{step > number ? <Check size={13} /> : number}</span>{label}
+                    </li>
+                  );
+                })}
+              </ol>
+              <div className="config-selection">
+                <small>Aktuelle Auswahl</small>
+                <strong>{getLabel(projectOptions, formData.projectType)}</strong>
+                <p>Je genauer Ihre Angaben, desto konkreter können wir antworten.</p>
               </div>
-            </div>
+            </aside>
 
-            <div style={contentStyle}>
+            <div className="config-content">
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  variants={slideVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-                >
-                  <div style={{ flex: 1 }}>
-                    {step === 1 && (
-                      <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Welche Sichtbarkeit brauchen Sie?</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                          Wählen Sie die passende Projektart und, falls relevant, die Schildart oder das Website-Paket.
-                        </p>
+                <motion.div key={step} className="config-step" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }}>
+                  {step === 1 && (
+                    <>
+                      <span className="config-kicker">Schritt 1 von 4</span>
+                      <h2>Was dürfen wir für Sie entwickeln?</h2>
+                      <p className="config-intro">Wählen Sie den Schwerpunkt. Weitere Leistungen können wir später kombinieren.</p>
+                      <OptionGroup label="Projektart" options={projectOptions} value={formData.projectType} onSelect={(value) => select('projectType', value)} />
+                      <OptionGroup label="Physische Sichtbarkeit" options={visibilityOptions} value={formData.visibility} onSelect={(value) => select('visibility', value)} />
+                      <OptionGroup label="Website-Paket" options={packageOptions} value={formData.websitePackage} onSelect={(value) => select('websitePackage', value)} />
+                    </>
+                  )}
 
-                        <div className="grid-cols-2" style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
-                          {projectOptions.map((option) => (
-                            <RadioOption
-                              key={option.id}
-                              icon={option.icon}
-                              title={option.title}
-                              desc={option.desc}
-                              selected={formData.projectType === option.id}
-                              onClick={() => handleSelect('projectType', option.id)}
-                            />
-                          ))}
+                  {step === 2 && (
+                    <>
+                      <span className="config-kicker">Schritt 2 von 4</span>
+                      <h2>Budget, Zeitraum & Inspiration</h2>
+                      <p className="config-intro">Damit wir Umfang und nächsten Schritt realistisch einschätzen können.</p>
+                      <OptionGroup label="Budgetrahmen" options={budgetOptions} value={formData.budget} onSelect={(value) => select('budget', value)} />
+                      <OptionGroup label="Zeitraum" options={timelineOptions} value={formData.timeline} onSelect={(value) => select('timeline', value)} />
+                      <label className="config-label"><Link2 size={17} /> Inspirations-Websites</label>
+                      <textarea className="config-input" name="inspirationWebsites" value={formData.inspirationWebsites} onChange={change} rows="3" placeholder="Links zu Websites, Marken oder Stilen" />
+                    </>
+                  )}
+
+                  {step === 3 && (
+                    <>
+                      <span className="config-kicker">Schritt 3 von 4</span>
+                      <h2>Wie können wir Sie erreichen?</h2>
+                      <p className="config-intro">Drei Pflichtfelder, damit Ihre Anfrage nicht im digitalen Nirgendwo landet.</p>
+                      <form id="lead-form" className="config-form" onSubmit={submit}>
+                        <div className="config-input-row">
+                          <input className="config-input" name="name" value={formData.name} onChange={change} required placeholder="Ihr Name *" />
+                          <input className="config-input" name="company" value={formData.company} onChange={change} placeholder="Unternehmen" />
                         </div>
+                        <input className="config-input" type="email" name="email" value={formData.email} onChange={change} required placeholder="E-Mail-Adresse *" />
+                        <input className="config-input" type="tel" name="phone" value={formData.phone} onChange={change} required placeholder="Telefonnummer *" />
+                        <label className="config-label"><MessageCircle size={17} /> Notizen</label>
+                        <textarea className="config-input" name="notes" value={formData.notes} onChange={change} rows="5" placeholder="Wünsche, vorhandene Website oder besondere Anforderungen" />
+                      </form>
+                    </>
+                  )}
 
-                        <div style={{ display: 'grid', gap: '20px', marginTop: '28px' }}>
-                          <OptionGroup label="Schildart" icon={<Monitor size={16} />} options={signTypeOptions} value={formData.signType} onSelect={(value) => handleSelect('signType', value)} />
-                          <OptionGroup label="Website-Paket" icon={<Layout size={16} />} options={websitePackageOptions} value={formData.websitePackage} onSelect={(value) => handleSelect('websitePackage', value)} />
-                        </div>
-                      </>
-                    )}
+                  {step === 4 && (
+                    <>
+                      <span className="config-kicker">Schritt 4 von 4</span>
+                      <h2>Anfrage prüfen</h2>
+                      <p className="config-intro">Passt alles? Dateien senden Sie anschließend bequem per WhatsApp.</p>
+                      <div className="config-summary">
+                        {[
+                          ['Projektart', getLabel(projectOptions, formData.projectType)],
+                          ['Physische Sichtbarkeit', getLabel(visibilityOptions, formData.visibility)],
+                          ['Website-Paket', getLabel(packageOptions, formData.websitePackage)],
+                          ['Budgetrahmen', getLabel(budgetOptions, formData.budget)],
+                          ['Zeitraum', getLabel(timelineOptions, formData.timeline)],
+                          ['Kontakt', `${formData.name}${formData.company ? `, ${formData.company}` : ''}`],
+                        ].map(([label, value]) => <div key={label}><small>{label}</small><strong>{value}</strong></div>)}
+                      </div>
+                      <div className="config-whatsapp-note"><Bot size={22} /><p><strong>Keine Uploads nötig.</strong><br />Fotos, Logos, Videos und Inspirationen können Sie nach dem Absenden per WhatsApp teilen.</p></div>
+                    </>
+                  )}
 
-                    {step === 2 && (
-                      <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Budget, Zeitraum & Inspiration</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                          Diese Angaben helfen uns, Ihr Projekt realistisch einzuordnen.
-                        </p>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                          <OptionGroup label="Budgetrahmen" icon={<Euro size={16} />} options={budgetOptions} value={formData.budget} onSelect={(value) => handleSelect('budget', value)} />
-                          <OptionGroup label="Zeitraum" icon={<Clock size={16} />} options={timelineOptions} value={formData.timeline} onSelect={(value) => handleSelect('timeline', value)} />
-
-                          <div>
-                            <label style={labelStyle}><LinkIcon size={16} /> Inspirations-Websites</label>
-                            <textarea
-                              name="inspirationWebsites"
-                              value={formData.inspirationWebsites}
-                              onChange={handleChange}
-                              className="form-input"
-                              rows="3"
-                              placeholder="Links zu Websites, Stilen oder Marken, die Ihnen gefallen"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {step === 3 && (
-                      <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Kontaktdaten & Notizen</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                          Wie können wir Sie erreichen und was sollten wir vorab wissen?
-                        </p>
-
-                        <form id="lead-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                          <div className="grid-cols-2" style={{ gap: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                            <input type="text" name="name" value={formData.name} onChange={handleChange} required className="form-input" placeholder="Ihr Name *" />
-                            <input type="text" name="company" value={formData.company} onChange={handleChange} className="form-input" placeholder="Firma / Geschäft" />
-                          </div>
-                          <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-input" placeholder="E-Mail-Adresse *" />
-                          <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required className="form-input" placeholder="Telefonnummer *" />
-                          <div>
-                            <label style={labelStyle}><Type size={16} /> Notizen</label>
-                            <textarea
-                              name="notes"
-                              value={formData.notes}
-                              onChange={handleChange}
-                              className="form-input"
-                              rows="5"
-                              placeholder="Wünsche, Standort, vorhandene Website oder besondere Anforderungen"
-                            />
-                          </div>
-                        </form>
-                      </>
-                    )}
-
-                    {step === 4 && (
-                      <>
-                        <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Anfrage prüfen</h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-                          Senden Sie die Anfrage ab. Dateien schicken Sie danach bequem per WhatsApp.
-                        </p>
-
-                        <div style={summaryGridStyle}>
-                          <SummaryItem label="Projektart" value={getSelectedLabel(projectOptions, formData.projectType)} />
-                          <SummaryItem label="Schildart" value={getSelectedLabel(signTypeOptions, formData.signType)} />
-                          <SummaryItem label="Website-Paket" value={getSelectedLabel(websitePackageOptions, formData.websitePackage)} />
-                          <SummaryItem label="Budgetrahmen" value={getSelectedLabel(budgetOptions, formData.budget)} />
-                          <SummaryItem label="Zeitraum" value={getSelectedLabel(timelineOptions, formData.timeline)} />
-                          <SummaryItem label="Kontakt" value={formData.name ? `${formData.name}${formData.company ? `, ${formData.company}` : ''}` : 'Noch offen'} />
-                        </div>
-
-                        <div style={whatsappHintStyle}>
-                          <Phone size={22} color="var(--accent-primary)" />
-                          <div>
-                            <strong>Dateien nach dem Absenden per WhatsApp senden</strong>
-                            <p style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-                              Fotos, Logos, Videos, Screenshots und Inspirationen werden nicht hochgeladen, sondern direkt per WhatsApp geteilt.
-                            </p>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  <div style={navButtonsStyle}>
-                    {step > 1 ? (
-                      <button className="btn-secondary" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <ArrowLeft size={16} /> Zurück
-                      </button>
-                    ) : <div />}
-
+                  <div className="config-navigation">
+                    {step > 1 ? <button className="config-button secondary" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={17} /> Zurück</button> : <span />}
                     {step < 4 ? (
-                      <button
-                        className="btn-primary"
-                        onClick={handleNext}
-                        disabled={!canProceed}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', opacity: canProceed ? 1 : 0.5 }}
-                      >
-                        Weiter <ArrowRight size={16} />
-                      </button>
+                      <button className="config-button primary" disabled={!canProceed} onClick={() => canProceed && setStep((current) => current + 1)}>Weiter <ArrowRight size={17} /></button>
                     ) : (
-                      <button onClick={handleSubmit} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        Anfrage absenden <Check size={16} />
-                      </button>
+                      <button className="config-button primary" onClick={submit}>Anfrage absenden <Check size={17} /></button>
                     )}
                   </div>
                 </motion.div>
@@ -322,241 +234,6 @@ const Configurator = ({ onClose }) => {
       </div>
     </div>
   );
-};
-
-const OptionGroup = ({ label, icon, options, value, onSelect }) => (
-  <div>
-    <label style={labelStyle}>{icon} {label}</label>
-    <div className="grid-cols-2" style={{ display: 'grid', gap: '12px', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-      {options.map((option) => (
-        <RadioOption
-          key={option.id}
-          icon={option.icon}
-          title={option.title}
-          desc={option.desc}
-          compact
-          selected={value === option.id}
-          onClick={() => onSelect(option.id)}
-        />
-      ))}
-    </div>
-  </div>
-);
-
-const RadioOption = ({ icon, title, desc, selected, onClick, badge, badgeColor, badgeTextColor, compact }) => (
-  <div
-    className={`radio-card ${selected ? 'selected' : ''}`}
-    onClick={onClick}
-    style={{
-      border: selected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-      transform: selected ? 'scale(1.02)' : 'scale(1)',
-      boxShadow: selected ? '0 8px 30px rgba(255,123,0,0.15)' : 'none',
-      padding: compact ? '14px' : '16px',
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-    }}
-  >
-    {badge && (
-      <div style={{
-        position: 'absolute',
-        top: '-12px',
-        right: '20px',
-        background: badgeColor || 'var(--accent-primary)',
-        color: badgeTextColor || 'white',
-        fontSize: '0.75rem',
-        fontWeight: 'bold',
-        padding: '4px 12px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
-      }}>
-        {badge}
-      </div>
-    )}
-    <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '8px' }}>
-      {icon && <div style={{ color: selected ? 'var(--accent-primary)' : 'var(--text-secondary)' }}>{icon}</div>}
-      <div>
-        <h4 style={{ fontSize: '1.1rem', marginBottom: '4px', lineHeight: '1.2' }}>
-          {title}
-        </h4>
-      </div>
-    </div>
-    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 0, flex: 1 }}>{desc}</p>
-  </div>
-);
-
-const SummaryItem = ({ label, value }) => (
-  <div style={summaryItemStyle}>
-    <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{label}</span>
-    <strong style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>{value}</strong>
-  </div>
-);
-
-const overlayStyle = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'var(--bg-overlay)',
-  backdropFilter: 'blur(10px)',
-  zIndex: 1000,
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: '20px',
-};
-
-const modalStyle = {
-  width: '100%',
-  maxWidth: '1000px',
-  height: '85vh',
-  maxHeight: '800px',
-  position: 'relative',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-  boxShadow: '0 25px 50px -12px rgba(255, 123, 0, 0.15)',
-};
-
-const closeBtnStyle = {
-  position: 'absolute',
-  top: '20px',
-  right: '20px',
-  background: 'var(--close-btn-bg)',
-  borderRadius: '50%',
-  width: '36px',
-  height: '36px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  border: 'none',
-  color: 'var(--text-primary)',
-  fontSize: '1.2rem',
-  cursor: 'pointer',
-  zIndex: 10,
-  transition: 'all 0.2s ease',
-};
-
-const layoutStyle = {
-  display: 'flex',
-  height: '100%',
-  flexDirection: 'row',
-};
-
-const sidebarStyle = {
-  width: '320px',
-  background: 'var(--bg-sidebar)',
-  borderRight: '1px solid var(--border-color)',
-  padding: '40px 30px',
-  display: 'flex',
-  flexDirection: 'column',
-};
-
-const contentStyle = {
-  flex: 1,
-  padding: '60px 80px',
-  overflowY: 'auto',
-};
-
-const progressContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '24px',
-  marginBottom: 'auto',
-};
-
-const stepItemStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '16px',
-  transition: 'opacity 0.3s ease',
-};
-
-const stepCircleStyle = {
-  width: '28px',
-  height: '28px',
-  borderRadius: '50%',
-  border: '2px solid',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  fontSize: '0.8rem',
-  fontWeight: 'bold',
-  transition: 'all 0.3s ease',
-};
-
-const estimateBoxStyle = {
-  background: 'rgba(255, 123, 0, 0.05)',
-  border: '1px solid var(--border-accent)',
-  borderRadius: '12px',
-  padding: '20px',
-  marginTop: '40px',
-};
-
-const navButtonsStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  marginTop: '40px',
-  paddingTop: '20px',
-  borderTop: '1px solid var(--border-color)',
-};
-
-const labelStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  marginBottom: '8px',
-  color: 'var(--text-secondary)',
-};
-
-const successStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  height: '100%',
-  textAlign: 'center',
-  padding: '40px',
-};
-
-const glowCircleStyle = {
-  width: '100px',
-  height: '100px',
-  borderRadius: '50%',
-  background: 'var(--accent-muted)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  marginBottom: '2rem',
-  boxShadow: '0 0 50px var(--accent-muted)',
-};
-
-const summaryGridStyle = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-  gap: '14px',
-  marginBottom: '28px',
-};
-
-const summaryItemStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6px',
-  background: 'var(--bg-card)',
-  border: '1px solid var(--border-color)',
-  borderRadius: '12px',
-  padding: '16px',
-};
-
-const whatsappHintStyle = {
-  display: 'flex',
-  gap: '14px',
-  alignItems: 'flex-start',
-  background: 'rgba(255, 123, 0, 0.06)',
-  border: '1px solid var(--border-accent)',
-  borderRadius: '12px',
-  padding: '18px',
-};
+}
 
 export default Configurator;

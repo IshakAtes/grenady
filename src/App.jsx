@@ -1,378 +1,297 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Monitor, Layout, Printer, TrendingUp, Palette, Image as ImageIcon, Zap, Menu, X, Sun, Moon, CheckCircle2 } from 'lucide-react';
+import { useState } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  Check,
+  ChevronDown,
+  Menu,
+  Monitor,
+  MoveHorizontal,
+  Pencil,
+  X,
+} from 'lucide-react';
+import { siShopify, siShopware } from 'simple-icons';
 import Configurator from './Configurator';
+import transformationBefore from './assets/lokmaReklameVorherjpg.jpg';
+import transformationAfter from './assets/lokmaReklameNachher.jpg';
 
-import cafeDeLokmaNeon from './assets/cafe-de-lokma-neon.jpg';
-import seebarSchild from './assets/seebar-schild.jpeg';
-import seebarSchild2 from './assets/seebar-shild2.jpg';
-import lokmaVorher from './assets/lokmaReklameVorherjpg.jpg';
-import lokmaNachher from './assets/lokmaReklameNachher.jpg';
-import wanddekoTeddy from './assets/wanddeko-teddy.jpg';
-import wcNeon from './assets/wc-neon.jpg';
-import heroBg from './assets/hero-bg.png';
+const services = [
+  {
+    icon: Monitor,
+    title: 'Websites & Onlineshops',
+    text: 'Maßgeschneiderte Websites und Onlineshops mit Shopify oder Shopware - technisch stark, visuell klar und auf Conversion optimiert.',
+  },
+  {
+    icon: BarChart3,
+    title: 'SEO/SEA',
+    text: 'Mehr Sichtbarkeit. Mehr qualifizierte Anfragen. Strategische SEO- und SEA-Kampagnen für nachhaltiges Wachstum.',
+  },
+  {
+    icon: Pencil,
+    title: 'Branding & Design',
+    text: 'Marken, die wiedererkannt und erinnert werden. Von der Positionierung über das Logo bis zum durchgängigen Auftritt.',
+  },
+];
 
-function App() {
-  const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [theme, setTheme] = useState('light');
+const projects = [
+  { image: '/grenady/projects/portfolio-naturnah.png', label: 'Naturnah', category: 'E-Commerce · Branding' },
+  { image: '/grenady/projects/portfolio-kantwerk.png', label: 'Kantwerk', category: 'Website · Strategie' },
+  { image: '/grenady/projects/portfolio-casa-marea.png', label: 'Casa Marea', category: 'Webdesign · Hospitality' },
+];
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+function GrenadyMark() {
+  return (
+    <svg className="grenady-mark" viewBox="0 0 42 42" aria-hidden="true">
+      <path d="M31 10.5 21 5 7.5 12.5v17L21 37l13.5-7.5v-9H21v6h7.5" />
+    </svg>
+  );
+}
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
+function BrandIcon({ icon }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d={icon.path} />
+    </svg>
+  );
+}
+
+function Brand() {
+  return (
+    <a className="brand" href="#top" aria-label="Grenady Startseite">
+      <GrenadyMark />
+      <span>Grenady</span>
+    </a>
+  );
+}
+
+function BeforeAfterComparison() {
+  const [position, setPosition] = useState(53);
 
   return (
-    <div className="app-container">
-      <div className="ambient-glow" style={{ top: '-10%', left: '-10%' }}></div>
-
-      {/* Navbar */}
-      <nav style={navStyle}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ width: '40px', height: '40px', background: 'var(--accent-primary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={24} color="white" />
-            </div>
-            <span style={{ fontSize: '1.5rem', fontWeight: '800', letterSpacing: '1px' }}>GRENADY</span>
-          </div>
-
-          <div className="desktop-menu" style={desktopMenu}>
-            <a href="#services" style={navLink}>Leistungen</a>
-            <a href="#portfolio" style={navLink}>Referenzen</a>
-            <a href="#trust" style={navLink}>Warum Wir</a>
-            <button onClick={toggleTheme} style={themeBtnStyle}>
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button className="btn-primary" onClick={() => setIsConfiguratorOpen(true)}>Projekt starten</button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} className="mobile-menu-wrapper">
-            <button onClick={toggleTheme} style={{ ...themeBtnStyle, display: 'block' }} className="mobile-only-btn">
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={mobileMenuBtn}>
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <header className="section-padding" style={{
-        position: 'relative',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        backgroundImage: `var(--hero-gradient), url('${heroBg}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center right',
-        backgroundRepeat: 'no-repeat',
-        borderBottom: '1px solid var(--border-color)',
-        paddingTop: '80px'
-      }}>
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <div style={{ maxWidth: '800px' }}>
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', marginBottom: '16px', letterSpacing: '-1px' }}
-            >
-              Sichtbar – <span className="text-gradient">offline & online.</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              style={{ fontSize: '1.3rem', color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '600px' }}
-            >
-              Von Schildern über Webdesign bis SEO – wir sorgen dafür, dass Kunden Sie sehen und wählen.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '40px' }}
-            >
-              {['Website', 'Schilder & Reklame', 'Visitenkarten', 'SEO', 'Logo', 'Wanddekoration'].map((tag, i) => (
-                <span key={i} style={{
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-color)',
-                  padding: '8px 18px',
-                  borderRadius: '30px',
-                  fontSize: '0.95rem',
-                  fontWeight: '500',
-                  color: 'var(--text-primary)',
-                  backdropFilter: 'blur(8px)',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-                }}>
-                  {tag}
-                </span>
-              ))}
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}
-            >
-              <button className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.1rem', padding: '16px 32px' }} onClick={() => setIsConfiguratorOpen(true)}>
-                Projekt starten <ArrowRight size={20} />
-              </button>
-              <a href="#portfolio" className="btn-secondary" style={{ display: 'flex', alignItems: 'center', fontSize: '1.1rem', padding: '16px 32px' }}>
-                Projekte ansehen
-              </a>
-            </motion.div>
-          </div>
-        </div>
-      </header>
-
-      {/* Services Overview */}
-      <section id="services" className="section-padding" style={{ background: 'var(--bg-services)' }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '16px' }}>Unsere <span className="text-accent">Leistungen</span></h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-              Umfassende Sichtbarkeitslösungen für Wachstum und Markenpräsenz.
-            </p>
-          </div>
-
-          <div className="grid-cols-3">
-            <ServiceCard
-              icon={<Monitor size={32} />}
-              title="Schilder & Reklame"
-              desc="Hochwertige physische Schilder und Leuchtreklame für maximale lokale Sichtbarkeit."
-            />
-            <ServiceCard
-              icon={<Layout size={32} />}
-              title="Webdesign"
-              desc="Konversionsstarke, digitale Premium-Erlebnisse, die verkaufen und überzeugen."
-              highlight
-            />
-            <ServiceCard
-              icon={<Printer size={32} />}
-              title="Visitenkarten & Flyer"
-              desc="Haptisches Marketingmaterial in Premium-Qualität für einen bleibenden Eindruck."
-            />
-            <ServiceCard
-              icon={<TrendingUp size={32} />}
-              title="SEO & Sichtbarkeit"
-              desc="Dominieren Sie die lokalen Suchergebnisse und werden Sie von neuen Kunden gefunden."
-            />
-            <ServiceCard
-              icon={<Palette size={32} />}
-              title="Logo & Branding"
-              desc="Einzigartige Markenidentitäten, die Vertrauen schaffen und im Gedächtnis bleiben."
-            />
-            <ServiceCard
-              icon={<ImageIcon size={32} />}
-              title="Wanddekoration"
-              desc="Eindrucksvolle Gestaltung Ihrer Geschäftsräume, die Ihre Marke erlebbar macht."
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Before / After Section */}
-      <section className="section-padding">
-        <div className="container">
-          <div className="grid-cols-2" style={{ alignItems: 'center' }}>
-            <div>
-              <h2 style={{ fontSize: '3rem', marginBottom: '24px' }}>Die <span className="text-gradient">Transformation</span></h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '32px' }}>
-                Erleben Sie, wie wir unsichtbare Unternehmen in lokale Wahrzeichen und digitale Autoritäten verwandeln. Unser kombinierter Ansatz garantiert, dass Kunden Sie finden, Ihnen vertrauen und sich für Sie entscheiden.
-              </p>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '40px' }}>
-                {['Bis zu 40% mehr Laufkundschaft', 'Höhere digitale Konversionsraten', 'Premium-Markenwahrnehmung', 'Einheitliche Offline- und Online-Identität'].map((item, i) => (
-                  <li key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.1rem' }}>
-                    <CheckCircle2 size={20} className="text-accent" /> {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div style={{ position: 'relative' }}>
-              <div className="glass-panel" style={{ padding: '8px', position: 'relative', zIndex: 2 }}>
-                {/* Placeholder for Before/After Image */}
-                <div style={{ width: '100%', height: '400px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
-                  <img src={lokmaNachher} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '114%', objectFit: 'cover' }} alt="Nachher" />
-                  <div style={{ position: 'absolute', top: 0, right: 0, width: '50%', height: '100%' }}>
-                    <span style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'var(--accent-primary)', color: 'white', padding: '4px 12px', borderRadius: '4px', zIndex: 10 }}>Nachher</span>
-                  </div>
-
-                  <div style={{ position: 'absolute', top: -32, left: 0, width: '50%', height: '108%', overflow: 'hidden', borderRight: '2px solid var(--accent-primary)', zIndex: 2 }}>
-                    <img src={lokmaVorher} style={{ width: '200%', height: '100%', objectFit: 'cover', maxWidth: 'none' }} alt="Vorher" />
-                    <span style={{ position: 'absolute', bottom: '20px', left: '20px', background: 'rgba(0,0,0,0.6)', color: 'white', padding: '4px 12px', borderRadius: '4px' }}>Vorher</span>
-                  </div>
-
-                  <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '40px', height: '40px', borderRadius: '50%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3, boxShadow: '0 0 10px rgba(0,0,0,0.5)' }}>
-                    <div style={{ width: '2px', height: '20px', background: '#050505' }}></div>
-                  </div>
-                </div>
-              </div>
-              <div className="ambient-glow" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '80%' }}></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust Section */}
-      <section id="trust" className="section-padding" style={{ background: 'var(--bg-trust)' }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 style={{ fontSize: '3rem', marginBottom: '16px' }}>Warum <span className="text-accent">Grenady</span></h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-              Wir bauen nicht nur Schilder oder Websites; wir entwickeln Sichtbarkeitssysteme.
-            </p>
-          </div>
-
-          <div className="grid-cols-4">
-            <TrustItem title="Premium-Materialien" desc="Nur die hochwertigsten Acrylgläser, Metalle und LEDs, die jahrelang halten." />
-            <TrustItem title="Individuelles Design" desc="Speziell auf Ihre Markenidentität zugeschnitten, niemals von der Stange." />
-            <TrustItem title="Moderne Sichtbarkeit" desc="Modernste Webtechnologie kombiniert mit markanter physischer Präsenz." />
-            <TrustItem title="Komplettservice" desc="Vom Konzept über die Installation bis zum Launch übernehmen wir alles." />
-          </div>
-        </div>
-      </section>
-
-      {/* Portfolio Section */}
-      <section id="portfolio" className="section-padding">
-        <div className="container">
-          <h2 style={{ fontSize: '3rem', marginBottom: '40px' }}>Ausgewählte <span className="text-gradient">Projekte</span></h2>
-
-          <div className="grid-cols-3">
-            {[
-              { img: cafeDeLokmaNeon, title: 'Cafe de Lokma', tag: 'LED-Reklame' },
-              { img: wanddekoTeddy, title: 'Teddy Wand', tag: 'Wanddekoration' },
-              { img: wcNeon, title: 'Restroom Neon', tag: 'LED-Reklame' },
-              { img: seebarSchild2, title: 'Cafe & See Bar (Nacht)', tag: 'Außenwerbung' },
-              { img: seebarSchild, title: 'Cafe & See Bar (Tag)', tag: 'Firmenschild' },
-              { img: heroBg, title: 'Ihre Marke', tag: 'Webdesign & Mehr' }
-            ].map((project, i) => (
-              <div key={i} className="glass-card" style={{ height: '300px', display: 'flex', alignItems: 'flex-end', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-                <img src={project.img} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }} alt={project.title} />
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%)', zIndex: 1 }}></div>
-                <div style={{ position: 'relative', zIndex: 2, width: '100%' }}>
-                  <span style={{ background: 'var(--accent-primary)', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '8px', display: 'inline-block' }}>{project.tag}</span>
-                  <h3 style={{ fontSize: '1.5rem', margin: 0, color: 'white' }}>{project.title}</h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="section-padding" style={{ textAlign: 'center', position: 'relative' }}>
-        <div className="ambient-glow" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}></div>
-        <div className="container">
-          <div className="glass-panel" style={{ padding: '80px 40px', maxWidth: '800px', margin: '0 auto', background: 'var(--bg-cta)' }}>
-            <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '24px' }}>Machen Sie Ihr Unternehmen <br /><span className="text-accent-glow">unübersehbar.</span></h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', marginBottom: '40px' }}>
-              Verlieren Sie keine Kunden mehr an Konkurrenten, die einfach besser aussehen. Verbessern Sie noch heute Ihre Sichtbarkeit.
-            </p>
-            <button className="btn-primary" style={{ fontSize: '1.2rem', padding: '16px 40px' }} onClick={() => setIsConfiguratorOpen(true)}>
-              Jetzt Projekt starten
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '40px 0', background: 'var(--footer-bg)' }}>
-        <div className="container">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Zap size={20} className="text-accent" />
-              <span style={{ fontSize: '1.2rem', fontWeight: '800' }}>GRENADY</span>
-            </div>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              &copy; {new Date().getFullYear()} Grenady. Premium Schilder & Webdesign.
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* Configurator Overlay */}
-      {isConfiguratorOpen && (
-        <Configurator onClose={() => setIsConfiguratorOpen(false)} />
-      )}
+    <div className="comparison" style={{ '--comparison-position': `${position}%` }}>
+      <img className="comparison-before" src={transformationBefore} alt="Unternehmensauftritt vor der Transformation" />
+      <div className="comparison-after"><img src={transformationAfter} alt="Unternehmensauftritt nach der Transformation" /></div>
+      <span className="comparison-label label-before">Vorher</span>
+      <span className="comparison-label label-after">Nachher</span>
+      <div className="comparison-divider"><span><MoveHorizontal size={19} /></span></div>
+      <input
+        type="range"
+        min="12"
+        max="88"
+        value={position}
+        onChange={(event) => setPosition(event.target.value)}
+        aria-label="Vorher-Nachher-Vergleich"
+      />
     </div>
   );
 }
 
-// Sub-components
-const ServiceCard = ({ icon, title, desc, highlight }) => (
-  <div className={`glass-card`} style={{ padding: '30px', border: highlight ? '1px solid var(--border-accent)' : undefined, background: highlight ? 'rgba(255,123,0,0.05)' : undefined }}>
-    <div style={{ color: highlight ? 'var(--accent-primary)' : 'var(--text-primary)', marginBottom: '20px' }}>
-      {icon}
+const legalPages = {
+  impressum: {
+    title: 'Impressum',
+    eyebrow: 'Rechtliches',
+    sections: [
+      ['Angaben gemäß § 5 DDG', 'Grenady Web Agency\nDie vollständigen Unternehmens- und Adressdaten werden vor der Veröffentlichung ergänzt.'],
+      ['Kontakt', 'E-Mail: kontakt@grenady.de'],
+      ['Verantwortlich für den Inhalt', 'Verantwortliche Person und ladungsfähige Anschrift werden vor der Veröffentlichung ergänzt.'],
+      ['Hinweis', 'Diese Seite ist bereits technisch vorbereitet. Bitte ergänzen Sie vor dem Livegang die vollständigen Pflichtangaben Ihres Unternehmens.'],
+    ],
+  },
+  datenschutz: {
+    title: 'Datenschutz',
+    eyebrow: 'Ihre Daten',
+    sections: [
+      ['Datenschutz auf einen Blick', 'Wir behandeln personenbezogene Daten vertraulich und ausschließlich im Rahmen der geltenden Datenschutzvorschriften.'],
+      ['Projektanfragen', 'Die im Konfigurator eingegebenen Daten dienen ausschließlich der Bearbeitung Ihrer Anfrage. Aktuell werden keine Dateien über die Website hochgeladen.'],
+      ['WhatsApp', 'Wenn Sie den WhatsApp-Link nutzen, verlassen Sie diese Website. Für die Verarbeitung durch WhatsApp gelten die Datenschutzbestimmungen des jeweiligen Anbieters.'],
+      ['Ihre Rechte', 'Sie haben insbesondere das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung und Datenübertragbarkeit. Die vollständigen Angaben zum Verantwortlichen und zu eingesetzten Diensten werden vor dem Livegang ergänzt.'],
+    ],
+  },
+};
+
+function LegalPage({ type }) {
+  const page = legalPages[type];
+  return (
+    <div className="legal-page">
+      <nav className="site-nav"><div className="nav-inner legal-nav"><Brand /><a className="legal-back" href="/grenady/"><ArrowLeft size={17} /> Zurück zur Startseite</a></div></nav>
+      <main className="legal-main">
+        <header className="legal-hero"><span>{page.eyebrow}</span><h1>{page.title}</h1><p>Transparent, verständlich und im Grenady Design.</p></header>
+        <div className="legal-content">
+          {page.sections.map(([title, text]) => <section key={title}><h2>{title}</h2><p>{text}</p></section>)}
+        </div>
+      </main>
+      <Footer />
     </div>
-    <h3 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>{title}</h3>
-    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6' }}>{desc}</p>
-  </div>
-);
+  );
+}
 
-const TrustItem = ({ title, desc }) => (
-  <div style={{ padding: '20px', borderLeft: '2px solid var(--border-color)' }}>
-    <h4 style={{ fontSize: '1.2rem', marginBottom: '12px' }}>{title}</h4>
-    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{desc}</p>
-  </div>
-);
+function Footer() {
+  return (
+    <footer className="site-footer">
+      <div className="footer-main">
+        <div><Brand /><p>Websites, SEO und digitale Systeme für Unternehmen, die messbar wachsen.</p></div>
+        <div className="footer-links"><span>Rechtliches</span><a href="/grenady/impressum">Impressum</a><a href="/grenady/datenschutz">Datenschutz</a></div>
+        <div className="footer-links"><span>Navigation</span><a href="/grenady/#services">Leistungen</a><a href="/grenady/#projects">Projekte</a></div>
+      </div>
+      <div className="footer-bottom"><span>© {new Date().getFullYear()} Grenady</span><span>Web Agency für digitale Sichtbarkeit</span></div>
+    </footer>
+  );
+}
 
-// Styles
-const navStyle = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  width: '100%',
-  zIndex: 100,
-  background: 'var(--nav-bg)',
-  backdropFilter: 'blur(12px)',
-  borderBottom: '1px solid var(--border-color)'
-};
+function App() {
+  const [isConfiguratorOpen, setIsConfiguratorOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-const desktopMenu = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '30px',
-  '@media (maxWidth: 768px)': {
-    display: 'none'
-  }
-};
+  const openConfigurator = () => {
+    setIsConfiguratorOpen(true);
+    setIsMenuOpen(false);
+  };
 
-const navLink = {
-  color: 'var(--text-secondary)',
-  fontWeight: '500',
-  transition: 'color 0.3s ease',
-  cursor: 'pointer'
-};
+  const legalType = window.location.pathname.endsWith('/impressum')
+    ? 'impressum'
+    : window.location.pathname.endsWith('/datenschutz')
+      ? 'datenschutz'
+      : null;
 
-const themeBtnStyle = {
-  background: 'transparent',
-  border: 'none',
-  color: 'var(--text-primary)',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '8px',
-  borderRadius: '50%',
-  transition: 'background 0.3s ease'
-};
+  if (legalType) return <LegalPage type={legalType} />;
 
-const mobileMenuBtn = {
-  background: 'transparent',
-  color: 'var(--text-primary)',
-  border: 'none',
-  display: 'none',
-  '@media (maxWidth: 768px)': {
-    display: 'block'
-  }
-};
+  return (
+    <div className="app-shell">
+      <nav className="site-nav">
+        <div className="nav-inner">
+          <Brand />
+
+          <div className="nav-links">
+            <a href="#services">Leistungen <ChevronDown size={14} /></a>
+            <a href="#projects">Projekte</a>
+            <a href="#about">Über uns</a>
+            <a href="#knowledge">Wissen</a>
+            <a href="#careers">Careers</a>
+          </div>
+
+          <div className="nav-actions">
+            <button className="button button-small" onClick={openConfigurator}>Projekt starten</button>
+            <button className="menu-button" onClick={() => setIsMenuOpen((open) => !open)} aria-label="Menü öffnen">
+              {isMenuOpen ? <X size={23} /> : <Menu size={23} />}
+            </button>
+          </div>
+        </div>
+
+        {isMenuOpen && (
+          <div className="mobile-menu">
+            <a href="#services" onClick={() => setIsMenuOpen(false)}>Leistungen</a>
+            <a href="#projects" onClick={() => setIsMenuOpen(false)}>Projekte</a>
+            <a href="#about" onClick={() => setIsMenuOpen(false)}>Über uns</a>
+            <a href="#knowledge" onClick={() => setIsMenuOpen(false)}>Wissen</a>
+            <button className="button" onClick={openConfigurator}>Projekt starten</button>
+          </div>
+        )}
+      </nav>
+
+      <main id="top">
+        <section className="hero">
+          <div className="hero-inner">
+            <div className="hero-copy">
+              <h1>
+                <span className="hero-line">Websites,</span>
+                <span className="hero-line"><em>SEO <span className="hero-ampersand">&amp;</span> digitale</em> Systeme</span>
+              </h1>
+              <p>Grenady ist deine Webagentur für Websites, SEO/SEA,<br className="desktop-break" /> Branding und digitale Systeme, die messbar wachsen.</p>
+              <button className="button hero-button" onClick={openConfigurator}>
+                Projekt starten <ArrowRight size={20} />
+              </button>
+
+              <div className="partner-row" aria-label="Technologiepartner">
+                <span className="partner shopify"><BrandIcon icon={siShopify} /><b>shopify</b></span>
+                <span className="partner shopware"><BrandIcon icon={siShopware} /><b>shopware</b></span>
+                <span className="partner google"><span className="google-mark"><i /><i /><i /><i /></span><b>Google <em>Partner</em></b></span>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="hero-art" aria-hidden="true">
+            <img src="/grenady/hero-laptop-platform-fullwidth.png" alt="" />
+          </div>
+
+          <div id="services" className="service-grid">
+            {services.map(({ icon: Icon, title, text }) => (
+              <article className="service-card" key={title}>
+                <Icon className="service-icon" size={42} strokeWidth={1.8} />
+                <div>
+                  <h2>{title}</h2>
+                  <p>{text}</p>
+                  <a href="#projects">Mehr erfahren <ArrowRight size={16} /></a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="projects" className="projects-section">
+          <div className="projects-inner">
+            <div className="projects-heading">
+              <span>Projekte</span>
+              <h2>Digitale Lösungen,<br />die Ergebnisse liefern.</h2>
+            </div>
+            <div className="project-rail">
+              {projects.map((project) => (
+                <article className="project-card" key={project.label}>
+                  <img src={project.image} alt={`${project.label} Projektvorschau`} />
+                  <div className="project-meta">
+                    <span>{project.category}</span>
+                    <strong>{project.label}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="about" className="intro-section">
+          <span>Grenady</span>
+          <h2>Strategie, Design und Technologie aus einer Hand.</h2>
+          <p>Wir entwickeln digitale Auftritte und Systeme, die Marken schärfen, Prozesse vereinfachen und Wachstum messbar machen.</p>
+        </section>
+
+        <section className="transformation-section">
+          <div className="transformation-inner">
+            <div className="transformation-copy">
+              <span>Vorher. Nachher. Grenady.</span>
+              <h2>Die Transformation</h2>
+              <p>Erleben Sie, wie wir unsichtbare Unternehmen in lokale Wahrzeichen und digitale Autoritäten verwandeln. Unser kombinierter Ansatz garantiert, dass Kunden Sie finden, Ihnen vertrauen und sich für Sie entscheiden.</p>
+              <ul>
+                {[
+                  'Bis zu 40% mehr Laufkundschaft',
+                  'Höhere digitale Konversionsraten',
+                  'Premium-Markenwahrnehmung',
+                  'Einheitliche Offline- und Online-Identität',
+                ].map((item) => <li key={item}><Check size={17} /> {item}</li>)}
+              </ul>
+            </div>
+            <BeforeAfterComparison />
+          </div>
+        </section>
+
+        <section className="closing-cta">
+          <div className="closing-cta-inner">
+            <span>Bereit für den nächsten Schritt?</span>
+            <h2>Machen Sie Ihr Unternehmen<br /><em>unübersehbar.</em></h2>
+            <p>Verlieren Sie keine Kunden mehr an Konkurrenten, die einfach besser aussehen. Verbessern Sie noch heute Ihre Sichtbarkeit.</p>
+            <button className="button" onClick={openConfigurator}>Jetzt Projekt starten <ArrowRight size={19} /></button>
+          </div>
+        </section>
+
+        <section id="knowledge" className="sr-only" aria-label="Wissen" />
+        <section id="careers" className="sr-only" aria-label="Careers" />
+      </main>
+
+      <Footer />
+
+      {isConfiguratorOpen && <Configurator onClose={() => setIsConfiguratorOpen(false)} />}
+    </div>
+  );
+}
 
 export default App;
