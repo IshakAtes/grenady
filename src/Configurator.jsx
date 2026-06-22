@@ -4,8 +4,57 @@ import { Check, ArrowRight, ArrowLeft, Monitor, Layout, Star, Palette, Image as 
 
 const WHATSAPP_NUMBER = '+491234567890'; // CONFIGURABLE WHATSAPP NUMBER
 
-const Configurator = ({ onClose }) => {
+const timelineOptions = [
+  { id: 'asap', title: 'So bald wie möglich', desc: 'Schneller Projektstart' },
+  { id: '2-4-weeks', title: 'In 2 - 4 Wochen', desc: 'Start ist konkret geplant' },
+  { id: '1-3-months', title: 'In 1 - 3 Monaten', desc: 'Projekt wird vorbereitet' },
+  { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum noch offen' },
+];
+
+const getLabel = (options, value, fallback = 'Noch offen') => options.find((option) => option.id === value)?.title || fallback;
+const getLabels = (options, values) => values.map((value) => getLabel(options, value)).join(', ');
+
+function OptionCard({ option, selected, multiple, onSelect }) {
+  const Icon = option.icon;
+  return (
+    <button
+      type="button"
+      className={`config-option ${multiple ? 'is-multiple' : ''} ${selected ? 'is-selected' : ''}`}
+      aria-pressed={selected}
+      onClick={onSelect}
+    >
+      {Icon && <Icon size={22} strokeWidth={1.8} />}
+      <span><strong>{option.title}</strong><small>{option.desc}</small></span>
+      <span className="option-check"><Check size={13} /></span>
+    </button>
+  );
+}
+
+function OptionGroup({ label, options, value, multiple = false, allowEmpty = false, onSelect }) {
+  return (
+    <fieldset className="config-fieldset">
+      <legend>{label}</legend>
+      <div className="config-options">
+        {options.map((option) => {
+          const selected = multiple ? value.includes(option.id) : value === option.id;
+          return (
+            <OptionCard
+              key={option.id}
+              option={option}
+              selected={selected}
+              multiple={multiple}
+              onSelect={() => onSelect(allowEmpty && selected ? '' : option.id)}
+            />
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+function Configurator({ onClose }) {
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     projectType: '',
     packageType: '',
@@ -19,9 +68,8 @@ const Configurator = ({ onClose }) => {
     company: '',
     email: '',
     phone: '',
-    whatsapp: ''
+    notes: '',
   });
-  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -143,7 +191,7 @@ const Configurator = ({ onClose }) => {
                 </div>
                 <span className="cfg-progress-label">Schritt {step} von 7</span>
               </div>
-            </div>
+            </aside>
 
             {/* Content Area */}
             <div className="cfg-content">
