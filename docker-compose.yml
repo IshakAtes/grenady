@@ -1,0 +1,16 @@
+services:
+  grenady-app:
+    build:
+      context: .
+      args:
+        VITE_BASE_PATH: /
+    image: ${GRENADY_IMAGE:-grenady-app:local}
+    container_name: grenady-app
+    restart: unless-stopped
+    env_file:
+      - ${GRENADY_ENV_FILE:-.env.local}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - "127.0.0.1:${GRENADY_HOST_PORT:-3000}:3000"
