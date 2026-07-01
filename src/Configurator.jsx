@@ -10,6 +10,7 @@ import {
   ExternalLink,
   LayoutTemplate,
   Link2,
+  LoaderCircle,
   Megaphone,
   MessageCircle,
   Monitor,
@@ -64,6 +65,9 @@ const timelineOptions = [
   { id: 'flexible', title: 'Flexibel', desc: 'Zeitraum noch offen' },
 ];
 
+const inquiryEndpoint = import.meta.env.VITE_INQUIRY_API_URL || '/api/send-inquiry';
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const getLabel = (options, value, fallback = 'Noch offen') => options.find((option) => option.id === value)?.title || fallback;
 const getLabels = (options, values) => values.map((value) => getLabel(options, value)).join(', ');
 
@@ -108,6 +112,8 @@ function OptionGroup({ label, options, value, multiple = false, allowEmpty = fal
 function Configurator({ onClose }) {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
   const [formData, setFormData] = useState({
     projectTypes: [],
     signType: '',
@@ -117,23 +123,80 @@ function Configurator({ onClose }) {
     inspirationWebsites: '',
     name: '',
     company: '',
+    companyWebsite: '',
     email: '',
     phone: '',
     notes: '',
   });
 
-  const canProceed = step === 1 ? formData.projectTypes.length > 0 : step === 3 ? Boolean(formData.name && formData.email && formData.phone) : true;
+  const hasValidContactData = Boolean(formData.name.trim() && emailRegex.test(formData.email.trim()) && formData.phone.trim());
+  const canProceed = step === 1 ? formData.projectTypes.length > 0 : step === 3 ? hasValidContactData : true;
   const needsWebsitePackage = formData.projectTypes.some((value) => ['website', 'relaunch', 'shop'].includes(value));
-  const select = (name, value) => setFormData((current) => ({ ...current, [name]: value }));
+  const select = (name, value) => {
+    setFormError('');
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
   const toggleProjectType = (value) => setFormData((current) => {
+    setFormError('');
     const projectTypes = current.projectTypes.includes(value)
       ? current.projectTypes.filter((item) => item !== value)
       : [...current.projectTypes, value];
     const includesWebsiteProject = projectTypes.some((item) => ['website', 'relaunch', 'shop'].includes(item));
     return { ...current, projectTypes, websitePackage: includesWebsiteProject ? current.websitePackage : '' };
   });
-  const change = (event) => setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
-  const submit = (event) => { event?.preventDefault(); setSubmitted(true); };
+  const change = (event) => {
+    setFormError('');
+    setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
+  const validateForm = () => {
+    if (!formData.name.trim()) return 'Bitte geben Sie Ihren Namen ein.';
+    if (!emailRegex.test(formData.email.trim())) return 'Bitte geben Sie eine gültige E-Mail-Adresse ein.';
+    if (!formData.phone.trim()) return 'Bitte geben Sie eine Telefonnummer ein.';
+    if (!formData.projectTypes.length) return 'Bitte wählen Sie mindestens eine Projektart aus.';
+    return '';
+  };
+  const buildInquiryPayload = () => ({
+    ...formData,
+    email: formData.email.trim(),
+    meta: {
+      pageUrl: window.location.href,
+      submittedAt: new Date().toISOString(),
+      userAgent: window.navigator.userAgent,
+    },
+  });
+  const submit = async (event) => {
+    event?.preventDefault();
+    if (isSubmitting) return;
+
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError('');
+
+    try {
+      const response = await fetch(inquiryEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(buildInquiryPayload()),
+      });
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Inquiry request failed');
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error(error);
+      setFormError('Die Anfrage konnte leider nicht gesendet werden. Bitte versuche es erneut oder kontaktiere uns direkt.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="configurator-overlay" role="dialog" aria-modal="true" aria-label="Projektanfrage">
@@ -144,8 +207,8 @@ function Configurator({ onClose }) {
           <motion.div className="config-success" initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}>
             <div className="success-icon"><CheckCircle2 size={40} /></div>
             <span className="config-kicker">Anfrage eingegangen</span>
-            <h2>Vielen Dank für Ihre Anfrage.</h2>
-            <p>Wir prüfen Ihre Angaben und melden uns schnellstmöglich bei Ihnen.</p>
+            <h2>Vielen Dank!</h2>
+            <p>Deine Anfrage wurde erfolgreich gesendet. Wir melden uns zeitnah bei dir.</p>
             <p className="success-note">Senden Sie uns gerne Fotos, Logos, Videos, Screenshots oder Inspirationen direkt per WhatsApp.</p>
             <div className="success-actions">
               <a className="config-button whatsapp-button" href={getWhatsappUrl()} target="_blank" rel="noreferrer">
@@ -209,11 +272,21 @@ function Configurator({ onClose }) {
                       <span className="config-kicker">Schritt 3 von 4</span>
                       <h2>Wie können wir Sie erreichen?</h2>
                       <p className="config-intro">Drei Pflichtfelder, damit Ihre Anfrage nicht im digitalen Nirgendwo landet.</p>
-                      <form id="lead-form" className="config-form" onSubmit={submit}>
+                      <form id="lead-form" className="config-form" onSubmit={(event) => { event.preventDefault(); if (canProceed) setStep(4); }}>
                         <div className="config-input-row">
                           <input className="config-input" name="name" value={formData.name} onChange={change} required placeholder="Ihr Name *" />
                           <input className="config-input" name="company" value={formData.company} onChange={change} placeholder="Unternehmen" />
                         </div>
+                        <input
+                          className="config-honeypot"
+                          name="companyWebsite"
+                          value={formData.companyWebsite}
+                          onChange={change}
+                          tabIndex="-1"
+                          autoComplete="off"
+                          aria-hidden="true"
+                          placeholder="Website"
+                        />
                         <input className="config-input" type="email" name="email" value={formData.email} onChange={change} required placeholder="E-Mail-Adresse *" />
                         <input className="config-input" type="tel" name="phone" value={formData.phone} onChange={change} required placeholder="Telefonnummer *" />
                         <label className="config-label"><MessageCircle size={17} /> Notizen</label>
@@ -241,12 +314,16 @@ function Configurator({ onClose }) {
                     </>
                   )}
 
+                  {formError && <p className="config-error" role="alert">{formError}</p>}
+
                   <div className="config-navigation">
-                    {step > 1 ? <button className="config-button secondary" onClick={() => setStep((current) => current - 1)}><ArrowLeft size={17} /> Zurück</button> : <span />}
+                    {step > 1 ? <button className="config-button secondary" disabled={isSubmitting} onClick={() => setStep((current) => current - 1)}><ArrowLeft size={17} /> Zurück</button> : <span />}
                     {step < 4 ? (
-                      <button className="config-button primary" disabled={!canProceed} onClick={() => canProceed && setStep((current) => current + 1)}>Weiter <ArrowRight size={17} /></button>
+                      <button className="config-button primary" disabled={!canProceed || isSubmitting} onClick={() => canProceed && setStep((current) => current + 1)}>Weiter <ArrowRight size={17} /></button>
                     ) : (
-                      <button className="config-button primary" onClick={submit}>Anfrage absenden <Check size={17} /></button>
+                      <button className="config-button primary" disabled={isSubmitting} onClick={submit}>
+                        {isSubmitting ? <><LoaderCircle className="config-spinner" size={17} /> Wird gesendet</> : <>Anfrage absenden <Check size={17} /></>}
+                      </button>
                     )}
                   </div>
                 </motion.div>
