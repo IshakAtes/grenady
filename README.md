@@ -1,16 +1,85 @@
-# React + Vite
+# Grenady
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite website with a small Node production server for the configurator API and SMTP e-mail delivery via Nodemailer.
 
-Currently, two official plugins are available:
+## Local Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Create `.env.local` from `.env.example` and fill in SMTP test credentials. For local Vite usage, set:
 
-## React Compiler
+```env
+INQUIRY_ALLOWED_ORIGIN=http://127.0.0.1:5173
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Then run:
 
-## Expanding the ESLint configuration
+```bash
+npm ci
+npm run dev:api
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The Vite dev server proxies `/api/send-inquiry` to the local API at `http://127.0.0.1:8787`.
+
+## Local Production Test
+
+```bash
+npm run lint
+VITE_BASE_PATH=/ npm run build
+npm run start
+```
+
+Open:
+
+```text
+http://127.0.0.1:3000
+```
+
+Health endpoint:
+
+```bash
+curl -I http://127.0.0.1:3000/healthz
+```
+
+API test with dummy data:
+
+```bash
+curl -X POST http://127.0.0.1:3000/api/send-inquiry \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Kunde","email":"kunde@example.com","phone":"0123456789","projectTypes":["website"],"notes":"SMTP Test"}'
+```
+
+Errors are visible in the server terminal or container logs.
+
+## Production Container
+
+The Docker image builds the Vite frontend first and then starts the Node production server:
+
+```bash
+docker build --build-arg VITE_BASE_PATH=/ -t grenady-app:local .
+docker run --rm --env-file .env.local -p 127.0.0.1:3000:3000 grenady-app:local
+```
+
+Internal container port: `3000`
+
+`.env` files are ignored by Git and Docker and must not be copied into the image.
+
+## Deployment
+
+Full VPS deployment instructions are in [docs/vps-deployment.md](docs/vps-deployment.md).
+
+Nginx example config is in [deploy/nginx/grenady.conf.example](deploy/nginx/grenady.conf.example).
+
+## Required Runtime ENV
+
+```env
+NODE_ENV=production
+PORT=3000
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM="Grenady <mail@grenady.de>"
+INQUIRY_RECIPIENT_EMAIL=ishakfeuer@gmail.com
+INQUIRY_ALLOWED_ORIGIN=https://grenady.de,https://www.grenady.de
+```

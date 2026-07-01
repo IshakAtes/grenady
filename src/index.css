@@ -306,6 +306,7 @@ img { display: block; max-width: 100%; }
 .config-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
 .config-input { width: 100%; padding: 13px 14px; color: var(--ink); border: 1px solid #d6d6d6; border-radius: 5px; background: white; resize: vertical; }
 .config-input:focus { outline: 2px solid rgba(233,135,0,.16); border-color: var(--orange); }
+.config-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .config-label { margin-top: 8px; }
 .config-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .config-summary > div { padding: 14px; display: grid; gap: 4px; border: 1px solid #dedede; border-radius: 5px; background: #fafafa; }
@@ -320,6 +321,10 @@ img { display: block; max-width: 100%; }
 .config-button.primary:disabled { cursor: not-allowed; opacity: .42; box-shadow: none; transform: none; }
 .config-button.secondary { color: #333; border: 1px solid #d4d4d4; background: white; }
 .config-button.secondary:hover { border-color: #999; background: #f7f7f7; }
+.config-button.secondary:disabled { cursor: not-allowed; opacity: .5; }
+.config-error { margin-top: 18px; padding: 13px 14px; color: #8a2700; border: 1px solid #f1b18a; border-radius: 5px; background: #fff5ef; font-size: 13px; line-height: 1.45; }
+.config-spinner { animation: config-spin .9s linear infinite; }
+@keyframes config-spin { to { transform: rotate(360deg); } }
 .config-success { height: 100%; padding: 55px 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .success-icon { width: 78px; height: 78px; margin-bottom: 24px; display: grid; place-items: center; color: var(--orange); border: 1px solid rgba(233,135,0,.28); border-radius: 50%; background: #fff8ef; }
 .config-success h2 { font-family: 'Playfair Display', Georgia, serif; font-size: clamp(36px, 5vw, 55px); font-weight: 400; line-height: 1.05; }
