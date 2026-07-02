@@ -39,6 +39,7 @@ scp docker-compose.yml /opt/grenady/docker-compose.yml
 ssh VPS
 cd /opt/grenady
 docker compose pull
+docker rm -f grenady-app || true # only needed once if a legacy non-Compose container exists
 docker compose up -d --remove-orphans
 docker image prune -f
 ```
@@ -184,6 +185,14 @@ docker compose pull
 docker compose up -d
 docker compose ps
 docker compose logs -f
+```
+
+Wenn `docker compose up -d` meldet, dass der Name `/grenady-app` schon vergeben ist, existiert noch ein alter Container, der nicht von diesem Compose-Projekt verwaltet wird. Einmalig entfernen:
+
+```bash
+docker rm -f grenady-app || true
+cd /opt/grenady
+docker compose up -d
 ```
 
 ## Debug-Befehle
