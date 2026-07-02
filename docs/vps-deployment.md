@@ -1,24 +1,51 @@
-# Grenady VPS Deployment
+# Grenady VPS Deployment mit Docker Compose
 
-Diese Anleitung bereitet Grenady für Docker, GitHub Container Registry und Deployment auf einen VPS vor. Der Mailversand läuft im Container über Nodemailer + SMTP und nutzt die SMTP-Zugangsdaten aus `/opt/grenady/.env`.
+Diese Anleitung beschreibt das produktive Deployment von Grenady auf einem VPS. Die App laeuft als Docker-Container, wird per Docker Compose verwaltet und verwendet Nodemailer + SMTP fuer das Kontaktformular. Secrets liegen nicht im Repository, sondern nur auf dem VPS in `/opt/grenady/.env`.
 
 ## Ergebnis
 
-- Docker Image: `ghcr.io/<owner>/<repo>:latest`
-- Docker Image mit Commit: `ghcr.io/<owner>/<repo>:<commit-sha>`
-- Container-Name: `grenady-app`
-- Deployment-Pfad: `/opt/grenady`
-- Interner Container-Port: `3000`
-- VPS-Port-Binding: `127.0.0.1:3000:3000`
-- Nginx leitet von `grenady.de` und `www.grenady.de` intern an `http://127.0.0.1:3000`
+- Image: `ghcr.io/ishakates/grenady:latest`
+- Container: `grenady-app`
+- Compose-Service: `grenady-app`
+- Deployment-Ordner: `/opt/grenady`
+- Compose-Datei auf dem VPS: `/opt/grenady/docker-compose.yml`
+- Runtime-Env auf dem VPS: `/opt/grenady/.env`
+- Port-Binding: `127.0.0.1:3000:3000`
+- Nginx leitet extern auf `http://127.0.0.1:3000`
+
+## GitHub Actions Ablauf
+
+Pull Requests auf `main`:
+
+```text
+npm ci
+npm run lint
+npm run build
+docker build
+```
+
+Es wird nur geprueft und gebaut. Pull Requests deployen nicht.
+
+Push auf `main`:
+
+```text
+npm ci
+npm run lint
+npm run build
+docker build
+docker push ghcr.io/ishakates/grenady:latest
+docker push ghcr.io/ishakates/grenady:<commit-sha>
+scp docker-compose.yml /opt/grenady/docker-compose.yml
+ssh VPS
+cd /opt/grenady
+docker compose pull
+docker compose up -d --remove-orphans
+docker image prune -f
+```
 
 ## GitHub Secrets
 
-In GitHub setzen unter:
-
-`GitHub Repository -> Settings -> Secrets and variables -> Actions -> New repository secret`
-
-Pflicht:
+In GitHub setzen unter `Repository -> Settings -> Secrets and variables -> Actions`:
 
 ```text
 VPS_HOST
@@ -27,21 +54,22 @@ VPS_SSH_KEY
 VPS_PORT
 ```
 
-Optional, falls das GHCR Package privat ist:
+Optional, falls das GHCR-Package privat ist und der VPS pullen muss:
 
 ```text
 GHCR_PAT
 ```
 
-`GHCR_PAT` braucht mindestens `read:packages`. SMTP-Zugangsdaten kommen nicht in GitHub Secrets, sondern nur in `/opt/grenady/.env` auf dem VPS.
+`GHCR_PAT` braucht mindestens `read:packages`. Der Workflow selbst pusht mit `GITHUB_TOKEN`.
 
-## ENV-Datei auf dem VPS
+## VPS Env-Datei
 
-Diese Datei liegt nur auf dem VPS und wird nicht aus GitHub deployt:
+Diese Datei bleibt nur auf dem VPS und wird vom Workflow nicht ueberschrieben:
 
 ```bash
 sudo mkdir -p /opt/grenady
 sudo nano /opt/grenady/.env
+chmod 600 /opt/grenady/.env
 ```
 
 Beispiel:
@@ -59,87 +87,19 @@ INQUIRY_RECIPIENT_EMAIL=ishakfeuer@gmail.com
 INQUIRY_ALLOWED_ORIGIN=https://grenady.de,https://www.grenady.de
 ```
 
-Im aktuellen Projekt verwendete Runtime-Variablen:
-
-```text
-NODE_ENV
-PORT
-SMTP_HOST
-SMTP_PORT
-SMTP_SECURE
-SMTP_USER
-SMTP_PASS
-SMTP_FROM
-INQUIRY_RECIPIENT_EMAIL
-INQUIRY_ALLOWED_ORIGIN
-```
-
-Nur lokale Entwicklung:
-
-```text
-API_PORT
-```
-
-Nur Build-time, im VPS-Container normalerweise nicht nötig:
-
-```text
-VITE_INQUIRY_API_URL
-VITE_BASE_PATH
-```
-
-## Lokal testen
-
-1. `.env.local` aus `.env.example` erstellen.
-2. SMTP-Testdaten eintragen, zum Beispiel vom echten Mailprovider oder einem SMTP-Testpostfach.
-3. Für Vite lokal setzen:
+Wenn du direkt ueber die Server-IP testest, fuege den Origin hinzu:
 
 ```env
-INQUIRY_ALLOWED_ORIGIN=http://127.0.0.1:5173
+INQUIRY_ALLOWED_ORIGIN=http://152.239.118.181,https://grenady.de,https://www.grenady.de
 ```
 
-4. Installieren und prüfen:
+## Einmalige VPS Vorbereitung
 
-```bash
-npm ci
-npm run lint
-VITE_BASE_PATH=/ npm run build
-```
-
-5. Entwicklungsmodus:
-
-```bash
-npm run dev:api
-npm run dev
-```
-
-6. Produktionsnah lokal:
-
-```bash
-npm run start
-```
-
-7. Konfigurator im Browser absenden. Fehler siehst du im Terminal des API-/Production-Servers.
-
-API-Test mit Dummy-Daten:
-
-```bash
-curl -X POST http://127.0.0.1:3000/api/send-inquiry \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Kunde","email":"kunde@example.com","phone":"0123456789","projectTypes":["website","seo"],"notes":"SMTP Test"}'
-```
-
-## Einmalige VPS-Vorbereitung
-
-Beispiel für Ubuntu/Debian:
+Docker und Compose-Plugin installieren:
 
 ```bash
 sudo apt update
 sudo apt install -y ca-certificates curl gnupg nginx certbot python3-certbot-nginx
-```
-
-Docker installieren:
-
-```bash
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
@@ -149,15 +109,16 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Deployment-User für Docker berechtigen:
+Deployment-User fuer Docker berechtigen:
 
 ```bash
 sudo usermod -aG docker "$USER"
 newgrp docker
 docker ps
+docker compose version
 ```
 
-Deployment-Ordner vorbereiten:
+Deployment-Ordner und Env-Datei anlegen:
 
 ```bash
 sudo mkdir -p /opt/grenady
@@ -166,105 +127,73 @@ nano /opt/grenady/.env
 chmod 600 /opt/grenady/.env
 ```
 
-SSH-Key für GitHub Actions erstellen:
+Falls das GHCR-Package privat ist, einmalig auf dem VPS einloggen:
 
 ```bash
-ssh-keygen -t ed25519 -C "github-actions-grenady" -f ~/.ssh/grenady_actions
-cat ~/.ssh/grenady_actions.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
-cat ~/.ssh/grenady_actions
-```
-
-Den privaten Key aus `~/.ssh/grenady_actions` als GitHub Secret `VPS_SSH_KEY` speichern.
-
-Weitere GitHub Secrets setzen:
-
-```text
-VPS_HOST=<deine-vps-ip-oder-hostname>
-VPS_USER=<ssh-user>
-VPS_PORT=22
-GHCR_PAT=<optional-falls-ghcr-package-privat>
-```
-
-DNS setzen:
-
-```text
-@    A    <VPS-IP>
-www  A    <VPS-IP>
+echo "<GHCR_PAT>" | docker login ghcr.io -u "<github-user>" --password-stdin
 ```
 
 ## Nginx Reverse Proxy
 
-Beispielkonfiguration kopieren:
+Beispielkonfiguration:
 
-```bash
-sudo nano /etc/nginx/sites-available/grenady.conf
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name grenady.de www.grenady.de;
+
+    client_max_body_size 2m;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
 ```
-
-Inhalt aus `deploy/nginx/grenady.conf.example` einfügen und Domain bei Bedarf austauschen.
 
 Aktivieren:
 
 ```bash
+sudo nano /etc/nginx/sites-available/grenady.conf
 sudo ln -s /etc/nginx/sites-available/grenady.conf /etc/nginx/sites-enabled/grenady.conf
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-HTTPS mit Certbot:
+HTTPS:
 
 ```bash
 sudo certbot --nginx -d grenady.de -d www.grenady.de
 sudo certbot renew --dry-run
 ```
 
-## Ersten Deploy auslösen
-
-Ein Push auf `main` startet automatisch:
-
-```bash
-git push origin main
-```
-
-Der Workflow baut das Image, pusht es nach GHCR und startet auf dem VPS den Container `grenady-app` neu.
-
-## Kontaktformular testen
-
-Nach dem Deploy:
-
-```bash
-curl -I http://127.0.0.1:3000
-curl -I https://grenady.de
-curl -X POST http://127.0.0.1:3000/api/send-inquiry \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Kunde","email":"kunde@example.com","phone":"0123456789","projectTypes":["website"],"notes":"SMTP Test vom VPS"}'
-```
-
-Danach im Browser den Konfigurator testweise absenden und prüfen, ob die E-Mail ankommt.
-
-## Prüf- und Debug-Befehle
+## Docker Compose pruefen
 
 Auf dem VPS:
 
 ```bash
-docker ps
-docker logs grenady-app
-docker inspect grenady-app
-docker images
-sudo nginx -t
-sudo systemctl status nginx
-sudo journalctl -u nginx --no-pager -n 100
-curl -I http://127.0.0.1:3000
-curl -I http://127.0.0.1:3000/healthz
-curl -I https://grenady.de
+cd /opt/grenady
+docker compose config
+docker compose pull
+docker compose up -d
+docker compose ps
+docker compose logs -f
 ```
 
-Wenn der Container nicht startet, zuerst prüfen:
+## Debug-Befehle
 
 ```bash
+docker ps
 docker logs grenady-app
-docker inspect grenady-app
-cat /opt/grenady/.env
+curl -I http://127.0.0.1:3000
+sudo nginx -t
+sudo systemctl reload nginx
 ```
 
 Wenn keine E-Mail ankommt:
@@ -274,13 +203,4 @@ docker logs grenady-app
 docker exec -it grenady-app env | grep -E 'SMTP|INQUIRY'
 ```
 
-Dann SMTP-Werte, Absenderdomain, Firewall und Login-Daten beim Mailprovider prüfen.
-
-Wenn Nginx nicht liefert:
-
-```bash
-sudo nginx -t
-sudo systemctl status nginx
-sudo journalctl -u nginx --no-pager -n 100
-curl -I http://127.0.0.1:3000
-```
+Pruefe dann SMTP-Werte, Absenderdomain, Login-Daten beim Mailprovider und `INQUIRY_ALLOWED_ORIGIN`.

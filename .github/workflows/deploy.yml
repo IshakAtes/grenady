@@ -3,8 +3,10 @@ name: Build and deploy Grenady container
 on:
   pull_request:
     branches: [main]
+    types: [opened, synchronize, reopened]
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,43 +18,14 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_NAME: ishakates/grenady
   CONTAINER_NAME: grenady-app
   DEPLOY_PATH: /opt/grenady
-  APP_PORT: "3000"
 
 jobs:
   pull-request:
     name: Pull request checks
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint --if-present
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_BASE_PATH: /
-
-      - name: Build Docker image without push
-        run: docker build --build-arg VITE_BASE_PATH=/ -t grenady-pr-check .
-
-  deploy:
-    name: Build, push and deploy
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -71,7 +44,36 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
-      - name: Build
+      - name: Build app
+        run: npm run build
+        env:
+          VITE_BASE_PATH: /
+
+      - name: Build Docker image from current source
+        run: docker build --pull --build-arg VITE_BASE_PATH=/ -t grenady-pr-check .
+
+  deploy:
+    name: Build, push and deploy
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Build app
         run: npm run build
         env:
           VITE_BASE_PATH: /
@@ -80,8 +82,8 @@ jobs:
         id: meta
         shell: bash
         run: |
-          IMAGE_NAME="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
-          echo "image=${REGISTRY}/${IMAGE_NAME}" >> "$GITHUB_OUTPUT"
+          IMAGE="${REGISTRY}/${IMAGE_NAME}"
+          echo "image=${IMAGE,,}" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
@@ -89,7 +91,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build \
+          docker build --pull \
             --build-arg VITE_BASE_PATH=/ \
             -t "${{ steps.meta.outputs.image }}:latest" \
             -t "${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha }}" \
@@ -100,22 +102,16 @@ jobs:
           docker push "${{ steps.meta.outputs.image }}:latest"
           docker push "${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.sha }}"
 
-      - name: Deploy to VPS
+      - name: Prepare SSH
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
-          VPS_USER: ${{ secrets.VPS_USER }}
           VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
-          GHCR_PAT: ${{ secrets.GHCR_PAT }}
-          GHCR_USER: ${{ github.actor }}
-          IMAGE: ${{ steps.meta.outputs.image }}
-          IMAGE_TAG: ${{ steps.meta.outputs.sha }}
         shell: bash
         run: |
           set -euo pipefail
 
           : "${VPS_HOST:?VPS_HOST secret is required}"
-          : "${VPS_USER:?VPS_USER secret is required}"
           : "${VPS_SSH_KEY:?VPS_SSH_KEY secret is required}"
           : "${VPS_PORT:?VPS_PORT secret is required}"
 
@@ -124,20 +120,75 @@ jobs:
           chmod 600 ~/.ssh/grenady_vps_key
           ssh-keyscan -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
 
+      - name: Prepare deploy directory on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${VPS_HOST:?VPS_HOST secret is required}"
+          : "${VPS_USER:?VPS_USER secret is required}"
+          : "${VPS_PORT:?VPS_PORT secret is required}"
+
+          ssh -i ~/.ssh/grenady_vps_key -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
+            "DEPLOY_PATH='$DEPLOY_PATH' bash -s" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+
+          if ! mkdir -p "$DEPLOY_PATH" 2>/dev/null; then
+            sudo mkdir -p "$DEPLOY_PATH"
+            sudo chown "$USER":"$USER" "$DEPLOY_PATH"
+          fi
+
+          if [ ! -f "$DEPLOY_PATH/.env" ]; then
+            echo "Missing $DEPLOY_PATH/.env on VPS. Create it before deploying." >&2
+            exit 1
+          fi
+          REMOTE_SCRIPT
+
+      - name: Upload Docker Compose file to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${VPS_HOST:?VPS_HOST secret is required}"
+          : "${VPS_USER:?VPS_USER secret is required}"
+          : "${VPS_PORT:?VPS_PORT secret is required}"
+
+          scp -i ~/.ssh/grenady_vps_key -P "$VPS_PORT" \
+            docker-compose.yml \
+            "$VPS_USER@$VPS_HOST:$DEPLOY_PATH/docker-compose.yml"
+
+      - name: Deploy with Docker Compose on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
+          GHCR_USER: ${{ github.actor }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${VPS_HOST:?VPS_HOST secret is required}"
+          : "${VPS_USER:?VPS_USER secret is required}"
+          : "${VPS_PORT:?VPS_PORT secret is required}"
+
           GHCR_PAT_B64="$(printf '%s' "${GHCR_PAT:-}" | base64 -w0)"
 
           ssh -i ~/.ssh/grenady_vps_key -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "IMAGE='$IMAGE' IMAGE_TAG='$IMAGE_TAG' CONTAINER_NAME='$CONTAINER_NAME' DEPLOY_PATH='$DEPLOY_PATH' APP_PORT='$APP_PORT' GHCR_USER='$GHCR_USER' GHCR_PAT_B64='$GHCR_PAT_B64' bash -s" <<'REMOTE_SCRIPT'
+            "DEPLOY_PATH='$DEPLOY_PATH' GHCR_USER='$GHCR_USER' GHCR_PAT_B64='$GHCR_PAT_B64' bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
 
           if ! command -v docker >/dev/null 2>&1; then
             echo "Docker is not installed on the VPS." >&2
             exit 1
-          fi
-
-          if ! mkdir -p "$DEPLOY_PATH" 2>/dev/null; then
-            sudo mkdir -p "$DEPLOY_PATH"
-            sudo chown "$USER":"$USER" "$DEPLOY_PATH"
           fi
 
           if [ ! -f "$DEPLOY_PATH/.env" ]; then
@@ -150,20 +201,12 @@ jobs:
             printf '%s' "$GHCR_PAT" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
           fi
 
-          docker pull "${IMAGE}:${IMAGE_TAG}"
-          docker stop "$CONTAINER_NAME" || true
-          docker rm "$CONTAINER_NAME" || true
+          cd "$DEPLOY_PATH"
+          docker compose pull
+          docker compose up -d --remove-orphans
+          docker image prune -f
 
-          docker run -d \
-            --name "$CONTAINER_NAME" \
-            --restart unless-stopped \
-            --env-file "$DEPLOY_PATH/.env" \
-            -e NODE_ENV=production \
-            -e PORT=3000 \
-            -p "127.0.0.1:${APP_PORT}:3000" \
-            "${IMAGE}:${IMAGE_TAG}"
-
-          docker ps --filter "name=$CONTAINER_NAME"
+          docker compose ps
           sleep 5
-          curl -fsS "http://127.0.0.1:${APP_PORT}/healthz"
+          curl -fsS "http://127.0.0.1:3000/healthz"
           REMOTE_SCRIPT
