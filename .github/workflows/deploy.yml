@@ -183,7 +183,7 @@ jobs:
           GHCR_PAT_B64="$(printf '%s' "${GHCR_PAT:-}" | base64 -w0)"
 
           ssh -i ~/.ssh/grenady_vps_key -p "$VPS_PORT" "$VPS_USER@$VPS_HOST" \
-            "DEPLOY_PATH='$DEPLOY_PATH' GHCR_USER='$GHCR_USER' GHCR_PAT_B64='$GHCR_PAT_B64' bash -s" <<'REMOTE_SCRIPT'
+            "CONTAINER_NAME='$CONTAINER_NAME' DEPLOY_PATH='$DEPLOY_PATH' GHCR_USER='$GHCR_USER' GHCR_PAT_B64='$GHCR_PAT_B64' bash -s" <<'REMOTE_SCRIPT'
           set -euo pipefail
 
           if ! command -v docker >/dev/null 2>&1; then
@@ -203,6 +203,16 @@ jobs:
 
           cd "$DEPLOY_PATH"
           docker compose pull
+
+          EXISTING_COMPOSE_PROJECT="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.project" }}' "$CONTAINER_NAME" 2>/dev/null || true)"
+          if [ -n "$EXISTING_COMPOSE_PROJECT" ] && [ "$EXISTING_COMPOSE_PROJECT" != "grenady" ]; then
+            echo "Removing container '$CONTAINER_NAME' from compose project '$EXISTING_COMPOSE_PROJECT'."
+            docker rm -f "$CONTAINER_NAME" || true
+          elif [ -z "$EXISTING_COMPOSE_PROJECT" ] && docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+            echo "Removing legacy container '$CONTAINER_NAME' so Docker Compose can recreate it."
+            docker rm -f "$CONTAINER_NAME" || true
+          fi
+
           docker compose up -d --remove-orphans
           docker image prune -f
 

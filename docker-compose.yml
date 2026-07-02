@@ -1,3 +1,5 @@
+name: grenady
+
 services:
   grenady-app:
     image: ghcr.io/ishakates/grenady:latest
